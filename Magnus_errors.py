@@ -143,7 +143,7 @@ def efficient_weak_compositions(maxw: int, list_m: list, list_cs, factorial: dic
     return weak_comps
 
 
-def summatory_compositions(h: float, maxp: int, s: int, m: int, cs: list, use_max: bool = True):
+def Psim_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, use_max: bool = True):
     r'''
     Computes
     .. math::
