@@ -143,7 +143,7 @@ def efficient_weak_compositions(maxw: int, list_m: list, list_cs, factorial: dic
     return weak_comps
 
 
-def Psim_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, use_max: bool = True):
+def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial: list, use_max: bool = True):
     r'''
     Computes
     .. math::
@@ -163,6 +163,7 @@ def Psim_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, use_max: bo
     s: 2s is the order of the commutator-free Magnus operator
     m: number of exponentials in the commutator-free Magnus expansion
     cs: list of values |x_{i,j}a_j| for each i,j
+    factorial: a dictionary with the factorial of all the numbers up to maxp or above.
     use_max: whether to use a faster but less tight bound (True) or a slower but tighter bound (False)
 
     Returns
@@ -170,11 +171,11 @@ def Psim_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, use_max: bo
     suma: a dictionary with the sum for each p.
     '''
 
-    weak_comps = efficient_weak_compositions(maxp, [m], [cs], use_max)
+    weak_comps = efficient_weak_compositions(maxp, [m], [cs], factorial, use_max)
 
     suma = {}
     for p in range(1, maxp+1):
-        num_comps = efficient_number_compositions(p, s)
+        num_comps = efficient_number_compositions(p, s, factorial)
 
         suma[p] = np.longdouble(0)
         for len_comp, nc in num_comps.items():
@@ -206,7 +207,7 @@ def Omega_bound(h: float, p: int, maxc: float, s: int = None):
         dim = np.sum(list(part.values()))
         for k, v in part.items():
             prod = prod * maxc**v / k**v
-        prod = prod / dim
+        prod = prod / dim if dim > 0 else np.longdouble(0)
         suma = suma + prod
 
     return suma * (h/2)**p
@@ -323,7 +324,7 @@ def quadrature_error(h, s, m, cs_y, maxc = 1, qr = None):
     error = 0
     for i in range(m):
         for t in range(s):
-            error += qr[i] * abs(cs_y[(s,m)][i][t])
+            error += qr[i] * abs(cs_y[s][m][i][t])
 
     return error
 
@@ -346,7 +347,7 @@ def basis_change_error(h, s, m, cs_y, maxc = 1):
 
     for k in range(1, m+1):
         for j in range(s):
-            basis_change_error += abs(cs_y[(s,m)][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
+            basis_change_error += abs(cs_y[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
 
     return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
 
@@ -494,3 +495,13 @@ def generate_y(n, x):
     assert(len(x) == n)
     R = generate_T(n).inv()
     return R@x
+
+################# Helper functions ######################
+
+# Function to convert keys to float
+def convert_keys_to_float(data):
+    new_data = {}
+    for key, value in data.items():
+        new_key = float(key)
+        new_data[new_key] = value
+    return new_data
