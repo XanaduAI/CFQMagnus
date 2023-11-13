@@ -15,7 +15,7 @@ with open('cs_y.json', 'r') as f:
 
 # Compute a dictionary with the value of the factorial
 factorial = {}
-for i in range(0, 50):
+for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
 # We will import the functions from the file "Magnus_error.py"
@@ -35,26 +35,35 @@ def error_sum(h, s, m, cs, cs_y, maxc = 1, maxp = 40, use_max = True, n = None):
     error = np.longdouble(0)
 
     # First, we add the error from the Taylor truncation of Omega
-    bound_taylor_omega = []
-    for p in range(0, maxp+1):
-        bound_taylor_omega.append(Omega_bound(h, p, maxc, s))
-    acc_bound_taylor_omega = accumulate_from(2*s+1,bound_taylor_omega, maxp)
-    error += acc_bound_taylor_omega[maxp]
+    p = 2*s+1
+    omega_error = Omega_bound(h, p, s, maxc)
+    last_correction = omega_error
+    while last_correction/omega_error > 1e-5:
+        p += 1
+        if p > maxp:
+            raise ValueError('The error is not converging')
+        last_correction = Omega_bound(h, p, s, maxc)
+        omega_error += last_correction
+    error += omega_error
+
 
     if s>1:
     # Error from the Taylor expansion of the exponential of the Magnus expansion
-        bound_taylor = []
-        for p in range(0, maxp+1):
-            bound_taylor.append(exp_Omega_bound(h, p, s, maxc, factorial))
-        acc_bound_taylor = accumulate_from(2*s+1, bound_taylor, maxp)
-        error += acc_bound_taylor[maxp]
+
+        p = 2*s+1
+        exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
+        last_correction = exp_omega_error
+        while last_correction/exp_omega_error > 1e-5: #todo: change 1e-5
+            p += 1
+            if p > maxp:
+                raise ValueError('The error is not converging')
+            last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
+            exp_omega_error += last_correction
+        error += exp_omega_error
 
 
         # Error from the Taylor expansion of the product of exponentials in the commutator-free operator
-        psi_m_taylor_order_error = Psi_m_Taylor_error(h, maxp, s, m, cs[s][m], factorial, use_max = use_max or s > 4)
-        acc_sum_compositions = accumulate_from(2*s+1, psi_m_taylor_order_error, maxp)
-        error += acc_sum_compositions[maxp]
-
+        error += Psi_m_Taylor_error(h, maxp, s, m, cs[s][m], factorial, use_max = use_max or s > 4)
 
         # Error from the quadrature rule
         qr = quadrature_residual(h, s, m, maxc = maxc)
@@ -73,7 +82,7 @@ def error_sum(h, s, m, cs, cs_y, maxc = 1, maxp = 40, use_max = True, n = None):
 
 # Now we want to use this function to compare the cost of three Magnus operators.
 # We first compute the error of a single step
-hs = [1/2**(i/4+3) for i in range(1,400)]
+hs = [1/2**(i/3+3) for i in range(1,200)] #todo:change to i/3 and range 1, 200
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [2**i for i in range(3, 15)]
 range_s = [1,2,3,4]
@@ -106,12 +115,12 @@ def compute_step_error(hs, range_s, range_m, maxp, total_error_list, total_time_
                     step_error[total_error][n][s][m][h] = float(error_sum(h, s, m, cs, cs_y, maxc = 1, maxp = maxp, use_max = use_max, n = n))
     return step_error
 
-step_error = compute_step_error(hs, range_s, range_m, maxp = 30, total_error_list = total_error_list, total_time_list = total_time_list, use_max = True)
+step_error = compute_step_error(hs, range_s, range_m, maxp = 50, total_error_list = total_error_list, total_time_list = total_time_list, use_max = True)
 
 # json save step_error
-with open('step_error_new.json', 'w') as f:
+with open('step_error_efficient.json', 'w') as f:
     json.dump(step_error, f)
-with open('step_error_new.json', 'r') as f:
+with open('step_error_efficient.json', 'r') as f:
     step_error = json.load(f, object_hook=convert_keys_to_float)
 
 

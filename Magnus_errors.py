@@ -173,20 +173,36 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
 
     weak_comps = efficient_weak_compositions(maxp, [m], [cs], factorial, use_max)
 
-    suma = {}
-    for p in range(1, maxp+1):
+    p = 2*s+1
+    num_comps = efficient_number_compositions(p, s, factorial)
+    
+    last_contribution = np.longdouble(0)
+    for len_comp, nc in num_comps.items():
+        last_contribution += nc*weak_comps[m][len_comp]
+
+    last_contribution *= h**p
+    error = last_contribution
+
+    while last_contribution /error > 1e-5:
+        p += 1
+        if p > maxp:
+            raise ValueError('The error is not converging')
         num_comps = efficient_number_compositions(p, s, factorial)
 
-        suma[p] = np.longdouble(0)
+        last_contribution = np.longdouble(0)
         for len_comp, nc in num_comps.items():
-            suma[p] += nc*weak_comps[m][len_comp] * h**p
+            last_contribution += nc*weak_comps[m][len_comp] 
+        
+        last_contribution *= h**p
 
-    return suma
+        error += last_contribution
+
+    return error
 
 
 ############## Bounding \|\Omega(h)\| ###########################
 
-def Omega_bound(h: float, p: int, maxc: float, s: int = None):
+def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
     r'''
     Computes a tight bound for the error of the Magnus expansion of order p,
     accounting for 2s terms in the Magnus operator.
