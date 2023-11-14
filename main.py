@@ -13,13 +13,11 @@ with open('cs.json', 'r') as f:
 with open('cs_y.json', 'r') as f:
     cs_y = json.load(f, object_hook=convert_keys_to_float)
 
-#with open('cs_split.json', 'r') as f:
-#    cs_split = json.load(f, object_hook=convert_keys_to_float)
-cs_split = None
+with open('cs_split.json', 'r') as f:
+    cs_split = json.load(f, object_hook=convert_keys_to_float)
 
-#with open('cs_y_split.json', 'r') as f:
-#    cs_y_split = json.load(f, object_hook=convert_keys_to_float)
-cs_y_split = None
+with open('cs_y_split.json', 'r') as f:
+    cs_y_split = json.load(f, object_hook=convert_keys_to_float)
 
 # Compute a dictionary with the value of the factorial
 factorial = {}
@@ -347,15 +345,15 @@ def compute_step_error_split(hs, range_s, range_m, maxp, total_error_list, total
     return step_error
 
 # We first compute the error of a single step
-range_s = [1,2,3,4] #todo: change this
-range_m = [1,2,5,11]
-#step_error_split = compute_step_error_split(hs, range_s, range_m, maxp = 50, total_error_list = total_error_list, total_time_list = total_time_list, use_max = True)
+range_s = [2, 3]
+range_m = [12, 20]
+step_error_split = compute_step_error_split(hs, range_s, range_m, maxp = 50, total_error_list = total_error_list, total_time_list = total_time_list, use_max = True)
 # json save step_error
-#with open('results/step_error_CFMagnus_split.json', 'w') as f:
-#    json.dump(step_error_split, f)
+with open('results/step_error_CFMagnus_split.json', 'w') as f:
+    json.dump(step_error_split, f)
 
-#with open('results/step_error_CFMagnus_split.json', 'r') as f:
-#    step_error_split = json.load(f, object_hook=convert_keys_to_float)
+with open('results/step_error_CFMagnus_split.json', 'r') as f:
+    step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
 def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True):
@@ -393,16 +391,16 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error, 
 fig, ax = plt.subplots(2, 2, figsize = (10,10))
 
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-colors = ['r', 'g', 'b', 'k']
+colors = ['g', 'b']
 # Now we select is the total error
 for total_error, ax in zip(total_error_list, ax.flatten()):
     for (s, m, c) in zip(range_s, range_m, colors):
         min_costs = []
         min_costs_h = []
         for total_time in total_time_list: #todo: Change the step error and minimization function here.
-            min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
+            #min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
             #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
-            #min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_split, trotter_exponentials = True)
+            min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split, trotter_exponentials = True)
             min_costs.append(min_cost)
             min_costs_h.append(min_cost_h)
         #todo: change the labels here
@@ -427,4 +425,4 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
 
 #plt.show()
 # save figure #todo: change name here
-fig.savefig('commutator_free_magnus_error.pdf', bbox_inches='tight')
+fig.savefig('commutator_free_split_magnus_error.pdf', bbox_inches='tight')
