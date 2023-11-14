@@ -110,7 +110,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         equation = '${}\cdot T**{}$'.format(str(np.round(f1,2)), str(np.round(f0,2)))
         ax.plot(total_time_list, min_costs, label = label + equation, color = c, linestyle = '--')
 
-    ########### Suzuki ###########
+    ########### CF Magnus ###########
 
     for (s, m, c) in zip(range_s, range_m, colors):
         min_costs = []
