@@ -441,14 +441,15 @@ def trotter_error_order4AB(h: float, normA: float = 1/2, normB: float = 1/2):
     )
 
 def suzuki_wiebe_error(h: float, s: int, total_time: float, maxc: float = 1):
-    # total error over total time
-    return 9/10 * (5/3)**s * h * total_time * maxc
+    # total error over total time, so we have multiplied by total_time/h
+    raise Warning('This function is not necessary, just pick total_error / total_time * h')
+    return 9/10 * (5/3)**s * h * maxc * total_time/h
 
 def suzuki_wiebe_cost(h: float, s: int, total_time: float, epsilon: float, maxc: float = 1, splits: int = 2):
     # Lambda is taken to be 1
-    # Cost over total time
+    # Cost over total time, so we have multiplied by total_time/h
 
-    return 3 * splits * h * maxc *  (25/3)**s * (h/epsilon)**(1/(2*s)) * total_time / h
+    return 3 * splits * h * maxc * s *  (25/3)**s * (h/epsilon)**(1/(2*s)) * total_time / h
 
 
 ############## Helper functions ###########################
