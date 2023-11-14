@@ -69,9 +69,6 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
 
     return min_cost_h, min_cost
 
-
-########### Suzuki ###########
-
 ########### Plot ###########
 # Generate 4 plots, for different total errors
 fig, ax = plt.subplots(2, 2, figsize = (10,10))
@@ -80,6 +77,9 @@ total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 colors = ['r', 'g', 'b', 'k']
 for total_error, ax in zip(total_error_list, ax.flatten()):
 
+
+    ########### Suzuki ###########
+
     for s, c in zip(range_s, colors):
         min_costs = []
         min_costs_h = []
@@ -87,7 +87,8 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
             min_costs_suzuki = np.inf
             min_cost_h_suzuki = None
             for h in hs:
-                error_suzuki = suzuki_wiebe_error(h, s, total_time)
+                r = total_time/h
+                error_suzuki = total_error / r
                 cost_suzuki = suzuki_wiebe_cost(h, s, total_time, error_suzuki)
                 if error_suzuki < total_error and cost_suzuki < min_costs_suzuki:
                     min_costs_suzuki = cost_suzuki
@@ -96,9 +97,20 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
             min_costs.append(min_costs_suzuki)
             min_costs_h.append(min_cost_h_suzuki)
 
-        ax.plot(total_time_list, min_costs, label = f's={s}', color = c, linestyle = '--')
+        # Implement a log log fit of min_cost vs total_time
+        log_min_costs = np.log(np.array(min_costs))
+        log_total_time_list = np.log(np.array(total_time_list))
+        
+        # Fit a line
+        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+        f1 = fit[1]
+        f0 = fit[0]
+    
+        label = 's={}'.format(s)
+        equation = '${}\cdot T**{}$'.format(str(np.round(f1,2)), str(np.round(f0,2)))
+        ax.plot(total_time_list, min_costs, label = label + equation, color = c, linestyle = '--')
 
-
+    ########### Suzuki ###########
 
     for (s, m, c) in zip(range_s, range_m, colors):
         min_costs = []
@@ -107,7 +119,19 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
             min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
             min_costs.append(min_cost)
             min_costs_h.append(min_cost_h)
-        ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
+
+        # Implement a log log fit of min_cost vs total_time
+        log_min_costs = np.log(np.array(min_costs))
+        log_total_time_list = np.log(np.array(total_time_list))
+        
+        # Fit a line
+        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+        f1 = fit[1]
+        f0 = fit[0]
+    
+        label = 's={} m={} '.format(s, m)
+        equation = '${}\cdot T**{}$'.format(str(np.round(f1)), str(np.round(f0,2)))
+        ax.plot(total_time_list, min_costs, label = label + equation, color = c)
 
     # set x label
     ax.set_xlabel(r'Total time $T$')
