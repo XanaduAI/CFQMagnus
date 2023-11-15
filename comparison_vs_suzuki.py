@@ -14,6 +14,23 @@ with open('cs.json', 'r') as f:
 with open('cs_y.json', 'r') as f:
     cs_y = json.load(f, object_hook=convert_keys_to_float)
 
+def convert_sci_to_readable(number_sci):
+    # Convert to readable format
+    number_readable = number_sci
+
+    # Split the number and exponent parts
+    x, y = map(float, number_readable.split('e+'))
+
+    # Format as x * 10^y
+    number_formatted = f"{x} \\cdot 10^{{{int(y)}}}"
+
+    return number_formatted
+
+# Example usage
+#result = convert_sci_to_readable(1.23e+05)
+#print(result)
+
+
 
 # Compute a dictionary with the value of the factorial
 factorial = {}
@@ -80,6 +97,8 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
 
     ########### Suzuki ###########
 
+    lines_suzuki = []  # List to store line instances for Suzuki
+
     for s, c in zip(range_s, colors):
         min_costs = []
         min_costs_h = []
@@ -105,12 +124,18 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         fit = np.polyfit(log_total_time_list, log_min_costs, 1)
         f1 = fit[1]
         f0 = fit[0]
-    
-        label = 's={}'.format(s)
-        equation = '${}\cdot T**{}$'.format(str(np.round(f1,2)), str(np.round(f0,2)))
-        ax.plot(total_time_list, min_costs, label = label + equation, color = c, linestyle = '--')
+
+        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+        label = f's={s}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+        line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '--')
+        lines_suzuki.append(line)
+
+    legend1 = ax.legend(handles=lines_suzuki, loc = 'upper left')
+    ax.add_artist(legend1)
 
     ########### CF Magnus ###########
+
+    lines_magnus = []  # List to store line instances for CF Magnus
 
     for (s, m, c) in zip(range_s, range_m, colors):
         min_costs = []
@@ -129,9 +154,14 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         f1 = fit[1]
         f0 = fit[0]
     
-        label = 's={} m={} '.format(s, m)
-        equation = '${}\cdot T**{}$'.format(str(np.round(f1)), str(np.round(f0,2)))
-        ax.plot(total_time_list, min_costs, label = label + equation, color = c)
+        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+        label = f's={s} m={m}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+        line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '-')
+        lines_magnus.append(line)
+
+    legend2 = ax.legend(handles=lines_magnus, loc = 'lower right')
+    ax.add_artist(legend2)
+
 
     # set x label
     ax.set_xlabel(r'Total time $T$')
@@ -143,7 +173,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ax.set_yscale('log')
     ax.set_xscale('log')
 
-    ax.legend()
+
 
 #handles, labels = plt.gca().get_legend_handles_labels()
 #by_label = dict(zip(labels, handles))
