@@ -218,7 +218,7 @@ def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
     '''
 
     suma = np.longdouble(0)
-    for part in partitions(p, m=2*s):
+    for part in partitions(p):
         prod = np.longdouble(1)
         dim = np.sum(list(part.values()))
         for k, v in part.items():
@@ -256,7 +256,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
     bound = np.longdouble(0)
 
     # We first generate all partitions of p into z parts of size up to 2s
-    pts = list(partitions(p, k=2*s))
+    pts = list(partitions(p, k=4*s))
 
     # For each possible partition,
     for part in pts:
@@ -442,7 +442,6 @@ def trotter_error_order4AB(h: float, normA: float = 1/2, normB: float = 1/2):
 
 def suzuki_wiebe_error(h: float, s: int, total_time: float, maxc: float = 1):
     # total error over total time, so we have multiplied by total_time/h
-    raise Warning('This function is not necessary, just pick total_error / total_time * h')
     return 9/10 * (5/3)**s * h * maxc * total_time/h
 
 def suzuki_wiebe_cost(h: float, s: int, total_time: float, epsilon: float, maxc: float = 1, splits: int = 2):
