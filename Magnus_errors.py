@@ -174,7 +174,7 @@ def efficient_weak_compositions(max_dim_w: int, m: int, cs: list, factorial: dic
     return weak_comps
 
 
-def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial: list, use_max: bool = True):
+def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, bar_xs: list, factorial: list, use_max: bool = True):
     r'''
     Computes
     .. math::
@@ -193,7 +193,7 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
     maxp: maximum order p of the summatory (It is assumed that this is sufficient for convergence)
     s: 2s is the order of the commutator-free Magnus operator
     m: number of exponentials in the commutator-free Magnus expansion
-    cs: list of values $|\overline{x}_{i,j}a_j|$ for each i,j
+    bar_xs: list of values $|\overline{x}_{i,j}a_j|$ for each i,j
     factorial: a dictionary with the factorial of all the numbers up to maxp or above.
     use_max: whether to use a faster but less tight bound (True) or a slower but tighter bound (False)
 
@@ -203,7 +203,7 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
     '''
 
     # We first precompute all the weak compositions
-    weak_comps = efficient_weak_compositions(maxp, m, cs, factorial, use_max)
+    weak_comps = efficient_weak_compositions(maxp, m, bar_xs, factorial, use_max)
 
     p = 2*s+1
     compositions_p = efficient_number_compositions(p, factorial)
@@ -269,7 +269,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
 
         # We further generate more partitions of each part into up to 2s parts
         product = np.longdouble(1)
-        for kl, kl_repetitions in k.keys(): # Iterating over the dictionary of a big partition
+        for kl, kl_repetitions in k.items(): # Iterating over the dictionary of a big partition
             suma = np.longdouble(0)
             j_parts = partitions(kl)
             for jl in j_parts: # Here we get a dictionary of small partitions
@@ -462,6 +462,10 @@ def generate_T(order):
     T = Matrix(order, order, lambda i,j: (1-(-1)**(i+j+1))/((i+j+1)*2**(i+j+1)))
     return T
 
+def generate_T_large(order, dim=25):
+    T = Matrix(order, dim, lambda i,j: (1-(-1)**(i+j+1))/((i+j+1)*2**(i+j+1)))
+    return T
+
 def gauss_legendre(n,x):
     Pnx = sp.legendre(n,x)
     Pp = sp.diff(Pnx,x)
@@ -480,27 +484,60 @@ def generate_Q(order):
     return Q
 
 ############## Functions to changes between the basis of univariate integrals and Lie algebra generators ###########################
-def generate_x(n, y):
+def x_from_y(n: int, y: np.ndarray):
     r'''
     n: size of the vector
     x: vector to be multiplied by T
 
-    Returns T@x
+    Returns y @ T
     '''
-    assert(len(y) == n)
+    assert(y.shape == (1,n))
     T = generate_T(n)
-    return T@y
+    return y @ T
 
-def generate_y(n, x):
+def y_from_x(n: int, x: np.ndarray):
     r'''
     n: size of the vector
     y: vector to be multiplied by R
 
-    Returns R@y
+    Returns x @ R
     '''
-    assert(len(x) == n)
+    assert(x.shape == (1,n))
     R = generate_T(n).inv()
-    return R@x
+    return x @ R
+
+def overline_x_from_y(n: int, y: np.ndarray):
+    r'''
+    n: size of the vector
+    x: vector to be multiplied by T
+
+    Returns y @ T
+    '''
+    assert(y.shape == (1,n))
+    T = generate_T_large(n)
+    return y @ T
+
+def y_from_z(n: int, z: np.ndarray):
+    r'''
+    n: size of the vector
+    z: vector to be multiplied by R
+
+    Returns z @ Q_inv
+    '''
+    assert(z.shape == (1,n))
+    Q_inv = generate_Q(n).inv()
+    return z @ Q_inv
+
+def z_from_y(n:int, y:np.ndarray):
+    r'''
+    n: size of the vector
+    y: vector to be multiplied by R
+
+    Returns y @ Q
+    '''
+    assert(y.shape == (1,n))
+    Q = generate_Q(n)
+    return y @ Q
 
 ################# Helper functions ######################
 
