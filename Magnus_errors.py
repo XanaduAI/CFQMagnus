@@ -15,9 +15,9 @@ import sympy as sp
 
 
 
-################ Bounding \Psi_m^{[2s]} ########################
+################ Bounding \tilde{\Psi}_m^{[2s]} ########################
 
-def efficient_number_compositions(p: int, s: int, factorial: dict) -> dict:
+def efficient_number_compositions_old(p: int, s: int, factorial: dict) -> dict:
     r'''
     Given a number p, computes a dictionary analyzing the 
     integer compositions of p. The dictionary key is the length of the composition of p,
@@ -30,7 +30,36 @@ def efficient_number_compositions(p: int, s: int, factorial: dict) -> dict:
     factorial: a dictionary with the factorial of all the numbers up to p or above
         (to avoid recomputing them every time you use it.)
     '''
-    pts = partitions(p, k=s)
+    pts = partitions(p, k=s) #todo: remove k=s
+    
+    comps = {}
+    for part in pts:
+        len_ = np.sum(list(part.values()))
+
+        num_comps = factorial[len_]
+        for n in part.values():
+            num_comps /= factorial[n]
+
+        if len_ in comps.keys():
+            comps[len_] += num_comps
+        else:
+            comps[len_] = num_comps
+
+    return comps
+
+def efficient_number_compositions(p: int, factorial: dict) -> dict:
+    r'''
+    Given a number p, computes a dictionary analyzing the 
+    integer compositions of p. The dictionary key is the dimension of the composition of p,
+    and the value is the number of compositions of that dimension.
+
+    Parameters
+    ----------
+    p: integers up to which compositions add up
+    factorial: a dictionary with the factorial of all the numbers up to p or above
+        (to avoid recomputing them every time you use it.)
+    '''
+    pts = partitions(p)
     
     comps = {}
     for part in pts:
@@ -83,22 +112,22 @@ def add_term(m: int, mean_cs: list, partition: dict, factorial: dict) -> float:
     return add_term
 
 
-def efficient_weak_compositions(maxw: int, list_m: list, list_cs, factorial: dict, use_max: bool = True):
+def efficient_weak_compositions(max_dim_w: int, m: int, cs: list, factorial: dict, use_max: bool = True):
     r'''
-    Computes sum{k_1...k_m\in weak_compositions(maxw)} c^{k_1}/k_1!...c^{k_m}/k_m!) for all weak compositions of length m.
+    Computes sum{k_1...k_m\in weak_compositions(max_dim_w)} c^{k_1}/k_1!...c^{k_m}/k_m!) for all weak compositions of length m.
     Depending on the value of `use_max`, it uses either the maximum value of c for all at once (faster) or the specific values of c,
     (more accurate).
 
     Parameters
     ----------
-    maxw: normw is the sum value of the weak composition.
-        maxw is the maximum value of normw. The result with be computed for range(maxw+1)
+    max_dim_w: normw is the sum value of the weak composition.
+        max_dim_w is the maximum value of normw. The result with be computed for range(max_dim_w+1)
     list_m: list of the possible values of m.
     list_cs: correspondingly, list of the values of c.
     use_max: 
         if True, use the maximum value of cs instead of the specific values of cs. 
         Faster but less tight bound will be returned.
-    factorial: a dictionary with the factorial of all the numbers up to maxw or above.
+    factorial: a dictionary with the factorial of all the numbers up to max_dim_w or above.
 
     Returns
     -------
@@ -106,39 +135,41 @@ def efficient_weak_compositions(maxw: int, list_m: list, list_cs, factorial: dic
     '''
 
     weak_comps = {}
-    for m, cs in zip(list_m, list_cs):
 
-        vector_add_term = np.vectorize(lambda part: add_term(m, mean_cs, part))
+    # In case we want to be more precise
+    vector_add_term = np.vectorize(lambda part: add_term(m, mean_cs, part))
 
-        max_cs = np.max(cs)
-        mean_cs = np.mean(cs, axis = 1)
+    max_cs = np.max(cs)
+    mean_cs = np.mean(cs, axis = 1)
 
-        weak_comps[m] = {}
-        for normw in range(maxw+1):
-            
-            suma = np.longdouble(0)
+    weak_comps[m] = {}
+    for dim_w in range(max_dim_w+1):
+        
+        suma = np.longdouble(0)
 
-            pts = partitions(normw, m=m)
+        partitions_k = partitions(dim_w, m=m)
 
-            if use_max:
-                for part in pts:
-                    len_ = np.sum(list(part.values()))
+        if use_max:
+            for k in partitions_k:
+                len_ = np.sum(list(k.values()))
 
-                    num_comps = factorial[m]/factorial[m-len_] * max_cs**len_
-                    for n in part.values():
-                        num_comps /= factorial[n]
+                # factorial[m]/ prod factorial[n] is the number of compositions 
+                # corresponding to this partition (eg permutations)
+                num_comps = factorial[m]/factorial[m-len_]
+                for n in k.values():
+                    num_comps /= factorial[n] 
 
-                    denominator = np.longdouble(1)
-                    for i in part.keys():
-                        denominator = denominator*factorial[i]
+                denominator = np.longdouble(1)
+                for ki, num_ki in k.items():
+                    denominator = denominator * (factorial[ki] ** num_ki) #todo: added "** num_ki"
 
-                    suma = suma + num_comps/denominator
+                suma = suma + num_comps / denominator * max_cs**dim_w
 
-            else:
-                add = vector_add_term(list(pts))
-                suma += np.sum(add)
+        else:
+            add = vector_add_term(list(partitions_k))
+            suma += np.sum(add)
 
-            weak_comps[m][normw] = suma
+        weak_comps[m][dim_w] = suma
 
     return weak_comps
 
@@ -162,7 +193,7 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
     maxp: maximum order p of the summatory (It is assumed that this is sufficient for convergence)
     s: 2s is the order of the commutator-free Magnus operator
     m: number of exponentials in the commutator-free Magnus expansion
-    cs: list of values |x_{i,j}a_j| for each i,j
+    cs: list of values $|\overline{x}_{i,j}a_j|$ for each i,j
     factorial: a dictionary with the factorial of all the numbers up to maxp or above.
     use_max: whether to use a faster but less tight bound (True) or a slower but tighter bound (False)
 
@@ -171,14 +202,15 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
     suma: a dictionary with the sum for each p.
     '''
 
-    weak_comps = efficient_weak_compositions(maxp, [m], [cs], factorial, use_max)
+    # We first precompute all the weak compositions
+    weak_comps = efficient_weak_compositions(maxp, m, cs, factorial, use_max)
 
     p = 2*s+1
-    num_comps = efficient_number_compositions(p, s, factorial)
+    compositions_p = efficient_number_compositions(p, factorial)
     
     last_contribution = np.longdouble(0)
-    for len_comp, nc in num_comps.items():
-        last_contribution += nc*weak_comps[m][len_comp]
+    for dim_Cp, num_Cp in compositions_p.items():
+        last_contribution += num_Cp*weak_comps[m][dim_Cp]
 
     last_contribution *= h**p
     error = last_contribution
@@ -187,46 +219,17 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, cs: list, factorial:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
-        num_comps = efficient_number_compositions(p, s, factorial)
+        compositions_p = efficient_number_compositions(p, factorial)
 
         last_contribution = np.longdouble(0)
-        for len_comp, nc in num_comps.items():
-            last_contribution += nc*weak_comps[m][len_comp] 
+        for dim_Cp, num_Cp in compositions_p.items():
+            last_contribution += num_Cp*weak_comps[m][dim_Cp] 
         
         last_contribution *= h**p
 
         error += last_contribution
 
     return error
-
-
-############## Bounding \|\Omega(h)\| ###########################
-
-def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
-    r'''
-    Computes a tight bound for the error of the Magnus expansion of order p,
-    accounting for 2s terms in the Magnus operator.
-
-    Parameters
-    ----------
-    h: step size
-    p: order of the Magnus expansion
-    s: 2s is the order of the Commutator Free Magnus operator
-    maxc: maximum value of the norm of |a_j|
-
-    Returns
-    '''
-
-    suma = np.longdouble(0)
-    for part in partitions(p):
-        prod = np.longdouble(1)
-        dim = np.sum(list(part.values()))
-        for k, v in part.items():
-            prod = prod * maxc**v / k**v
-        prod = prod / dim if dim > 0 else np.longdouble(0)
-        suma = suma + prod
-
-    return suma * (h/2)**p
 
 
 ############## Bounding \|\exp(\Omega(h))\| ###########################
@@ -256,29 +259,30 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
     bound = np.longdouble(0)
 
     # We first generate all partitions of p into z parts of size up to 2s
-    pts = list(partitions(p, k=4*s))
+    parts_p = list(partitions(p))
 
     # For each possible partition,
-    for part in pts:
-        large_comb_size = np.sum(list(part.values()))
-        num_combs_large = factorial[large_comb_size]/np.prod([factorial[v] for v in part.values()])
-
+    for k in parts_p:
+        # We first compute the size and number of combinations of the external partition
+        dim_k = np.sum(list(k.values()))
+        permutations_part_k = factorial[dim_k]/np.prod([factorial[v] for v in k.values()])
 
         # We further generate more partitions of each part into up to 2s parts
         product = np.longdouble(1)
-        for k in part.keys(): # Iterating over the dictionary of a big partition
+        for kl, kl_repetitions in k.keys(): # Iterating over the dictionary of a big partition
             suma = np.longdouble(0)
-            js = partitions(k, m = 2*s)
-            for j in js: # Here we get a dictionary of small partitions
-                size = np.sum(list(j.values()))
-                num_small_combs = factorial[size]/np.prod([factorial[jv] for jv in j.values()])
-                term = maxc**size / size 
-                term = term / np.prod([jk**jv for jk, jv in j.items()])
-                suma = suma + term * num_small_combs
+            j_parts = partitions(kl)
+            for jl in j_parts: # Here we get a dictionary of small partitions
+                dim_jl = np.sum(list(jl.values()))
+                permutations_part_jl = factorial[dim_jl]/np.prod([factorial[jlv] for jlv in jl.values()])
+                term = maxc**dim_jl / dim_jl 
+                term = term / np.prod([jlk**jlv for jlk, jlv in jl.items()])
+                suma = suma + term * permutations_part_jl
 
-            product = product * suma
+            # For we have to multiply product by suma as many times as k appears
+            product = product * (suma ** kl_repetitions) #todo: added kl_repetitions
 
-        bound += num_combs_large/factorial[large_comb_size] * product
+        bound += permutations_part_k/factorial[dim_k] * product
 
     assert(bound/2**(p) <= 1)
 
@@ -343,30 +347,6 @@ def quadrature_error(h, s, m, cs_y, maxc = 1, qr = None):
             error += qr[i] * abs(cs_y[s][m][i][t])
 
     return error
-
-############## Basis change error ###########################
-
-def basis_change_error(h, s, m, cs_y, maxc = 1):
-    r"""
-    Computes the error of the basis change of the Magnus expansion of order 2s+1.
-
-    Parameters
-    ----------
-    h: step size
-    s: n = 2s is order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
-    maxc: maximum value of the norm of the Hamiltonian and its derivatives
-    cs_y: list of the values of the quadrature rule
-    """
-
-    basis_change_error = 0
-
-    for k in range(1, m+1):
-        for j in range(s):
-            basis_change_error += abs(cs_y[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
-
-    return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
-
 
 ############## Trotter error ###########################
 
@@ -531,3 +511,57 @@ def convert_keys_to_float(data):
         new_key = float(key)
         new_data[new_key] = value
     return new_data
+
+
+# Deprecated
+############## Bounding \|\Omega(h)\| ###########################
+
+def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
+    r'''
+    Computes a tight bound for the error of the Magnus expansion of order p,
+    accounting for 2s terms in the Magnus operator.
+
+    Parameters
+    ----------
+    h: step size
+    p: order of the Magnus expansion
+    s: 2s is the order of the Commutator Free Magnus operator
+    maxc: maximum value of the norm of |a_j|
+
+    Returns
+    '''
+
+    suma = np.longdouble(0)
+    for part in partitions(p):
+        prod = np.longdouble(1)
+        dim = np.sum(list(part.values()))
+        for k, v in part.items():
+            prod = prod * maxc**v / k**v
+        prod = prod / dim if dim > 0 else np.longdouble(0)
+        suma = suma + prod
+
+    return suma * (h/2)**p
+
+
+############## Basis change error ###########################
+
+def basis_change_error(h, s, m, cs_y, maxc = 1):
+    r"""
+    Computes the error of the basis change of the Magnus expansion of order 2s+1.
+
+    Parameters
+    ----------
+    h: step size
+    s: n = 2s is order of the Magnus expansion
+    m: number of exponentials in the Commutator Free Magnus operator
+    maxc: maximum value of the norm of the Hamiltonian and its derivatives
+    cs_y: list of the values of the quadrature rule
+    """
+
+    basis_change_error = 0
+
+    for k in range(1, m+1):
+        for j in range(s):
+            basis_change_error += abs(cs_y[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
+
+    return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
