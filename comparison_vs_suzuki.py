@@ -61,7 +61,7 @@ factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
-hs = [1/2**(i/4+3) for i in range(1,100)]
+hs = [1/2**(i/4+3) for i in range(1,125)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [2**i for i in range(3, 15)]
 

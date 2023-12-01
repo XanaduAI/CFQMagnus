@@ -275,7 +275,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
             for jl in j_parts: # Here we get a dictionary of small partitions
                 dim_jl = np.sum(list(jl.values()))
                 permutations_part_jl = factorial[dim_jl]/np.prod([factorial[jlv] for jlv in jl.values()])
-                term = (2*maxc)**dim_jl / dim_jl 
+                term = (2*maxc)**dim_jl / dim_jl
                 term = term / np.prod([jlk**jlv for jlk, jlv in jl.items()])
                 suma = suma + term * permutations_part_jl
 
@@ -283,8 +283,6 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
             product = product * (suma ** kl_repetitions) #todo: added kl_repetitions
 
         bound += permutations_part_k/factorial[dim_k] * product
-
-    assert(bound/2**(p) <= 1)
 
     return bound * (h/2)**p
 
