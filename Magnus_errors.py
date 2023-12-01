@@ -275,7 +275,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
             for jl in j_parts: # Here we get a dictionary of small partitions
                 dim_jl = np.sum(list(jl.values()))
                 permutations_part_jl = factorial[dim_jl]/np.prod([factorial[jlv] for jlv in jl.values()])
-                term = maxc**dim_jl / dim_jl 
+                term = (2*maxc)**dim_jl / dim_jl 
                 term = term / np.prod([jlk**jlv for jlk, jlv in jl.items()])
                 suma = suma + term * permutations_part_jl
 
@@ -324,7 +324,7 @@ def quadrature_residual(h, s, m, maxc = 1):
 
     return quadrature_residual
 
-def quadrature_error(h, s, m, cs_y, maxc = 1, qr = None):
+def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
     r'''
     Computes the error of the quadrature rule error of order s,
     for the commutator free Magnus expansion of order 2s+1.
@@ -344,7 +344,7 @@ def quadrature_error(h, s, m, cs_y, maxc = 1, qr = None):
     error = 0
     for i in range(m):
         for t in range(s):
-            error += qr[i] * abs(cs_y[s][m][i][t])
+            error += qr[i] * abs(ys[s][m][i][t])
 
     return error
 
