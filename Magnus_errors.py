@@ -258,7 +258,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
     '''
     bound = np.longdouble(0)
 
-    # We first generate all partitions of p into z parts of size up to 2s
+    # We first generate all partitions of p into z parts
     parts_p = list(partitions(p))
 
     # For each possible partition,
@@ -280,7 +280,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
                 suma = suma + term * permutations_part_jl
 
             # For we have to multiply product by suma as many times as k appears
-            product = product * (suma ** kl_repetitions) #todo: added kl_repetitions
+            product = product * (suma ** kl_repetitions)
 
         bound += permutations_part_k/factorial[dim_k] * product
 

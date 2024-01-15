@@ -118,8 +118,9 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ########### Suzuki ###########
 
     lines_suzuki = []  # List to store line instances for Suzuki
-    linestyles = [(0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), 
-                (0, (3, 5, 1, 5, 1, 5)), (0, (3, 1, 1, 1, 1, 1))]
+    #linestyles = [(0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), 
+    #            (0, (3, 5, 1, 5, 1, 5)), (0, (3, 1, 1, 1, 1, 1))]
+    linestyles = ['--']*4
     for s, c, style in zip(range_s, colors, linestyles):
         min_costs = []
         min_costs_h = []
@@ -151,13 +152,13 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
         lines_suzuki.append(line)
 
-    legend1 = ax.legend(handles=lines_suzuki, loc = 'upper left')
+    legend1 = ax.legend(handles=lines_suzuki, loc = 'upper left', title = 'Suzuki')
     ax.add_artist(legend1)
 
     ########### CF Magnus ###########
 
     lines_magnus = []  # List to store line instances for CF Magnus
-    linestyles = ['-', (0, (5, 1)), '--', (0, (5, 10))]
+    linestyles = ['-']*4 #['-', (0, (5, 1)), '--', (0, (5, 10))]
     for (s, m, c, style) in zip(range_s, range_m, colors, linestyles):
         min_costs = []
         min_costs_h = []
@@ -180,7 +181,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
         lines_magnus.append(line)
 
-    legend2 = ax.legend(handles=lines_magnus, loc = 'lower right')
+    legend2 = ax.legend(handles=lines_magnus, loc = 'lower right', title = 'CF Magnus')
     ax.add_artist(legend2)
 
 
