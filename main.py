@@ -146,7 +146,7 @@ with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True):
+def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True, splits = 2):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -165,9 +165,7 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
     for h in hs:
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
-            cost_exponentials[h] *= 5**(s-1)
-        #if split_operator and m == 3 and s== 2: 
-        #    cost_exponentials[h] = 5**(s-1) * total_time/h # We can concatenate the first and last exponentials
+            cost_exponentials[h] *= 2 * 5**(s-1) * splits # Last two is because there are two fast-forwardable terms in the Heisenberg Hamiltonian
         errors[h] = total_time*step_error[total_time][s][m][h]/h
 
     min_cost = np.inf
@@ -246,7 +244,7 @@ with open('results/step_error_trotter.json', 'r') as f:
     step_error_trotter = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_trotter(hs, s, total_time, total_error, step_error, trotter_exponentials = True):
+def minimize_cost_trotter(hs, s, total_time, total_error, step_error, trotter_exponentials = True, splits = 2):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -266,7 +264,7 @@ def minimize_cost_trotter(hs, s, total_time, total_error, step_error, trotter_ex
         m = 1
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
-            cost_exponentials[h] *= 5**(s-1)
+            cost_exponentials[h] *= 2 * 5**(s-1) * splits # Last two is because there are two fast-forwardable terms in the Heisenberg Hamiltonian
         errors[h] = total_time*step_error[total_error][total_time][s][h]/h
 
     min_cost = np.inf
@@ -353,7 +351,7 @@ with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True):
+def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -371,8 +369,8 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error, 
     errors = {}
     for h in hs:
         cost_exponentials[h] = total_time*m/h
-        if trotter_exponentials: 
-            cost_exponentials[h] *= 5**(s-1)
+        #if trotter_exponentials: # No need to Trotterize the exponentials in the split-operator case
+        #    cost_exponentials[h] *= 2 * 5**(s-1)
         errors[h] = total_time*step_error[s][m][h]/h
 
     min_cost = np.inf
@@ -399,7 +397,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         for total_time in total_time_list: #todo: Change the step error and minimization function here.
             min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
             #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
-            #min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split, trotter_exponentials = True)
+            #min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
             min_costs.append(min_cost)
             min_costs_h.append(min_cost_h)
 
