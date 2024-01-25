@@ -331,7 +331,7 @@ def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
     h: step size
     s: 2s is the order of the Magnus expansion
     m: number of exponentials in the Commutator Free Magnus operator
-    ys: list of the coefficients y_{i,j} of the Magnus expansion #todo: change this
+    ys: list of the coefficients y_{i,j} of the Magnus expansion
     maxc: maximum value of the norm |a_j|
     '''
 
