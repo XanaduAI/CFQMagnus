@@ -312,11 +312,11 @@ def quadrature_residual(h, s, m, maxc = 1):
         n = 2*s
         partial_sums = []
         for j in range(0, 350):
-            term = math.factorial(2*n+j)/math.factorial(j)*(1-(-1)**(i+j))/((i+j+2*n)*2**(2*n+j+i))* maxc * (h/2)**(j)
+            term = math.factorial(2*n+j)/math.factorial(j) * maxc * (h/2)**(j)
             partial_sums.append(term + partial_sums[-1] if len(partial_sums) > 0 else term)
 
         partial_sums = np.array(partial_sums)
-        partial_sums *= (math.factorial(n)/math.factorial(2*n))**3 * math.factorial(n)/(2*n+1) * h**(2*n+1)
+        partial_sums *= (math.factorial(n)/math.factorial(2*n))**3 * math.factorial(n)/(2*n+1) * h**(2*n+1-i)
 
         quadrature_residual[i-1] = partial_sums[-1]
 
