@@ -165,7 +165,7 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
     for h in hs:
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
-            cost_exponentials[h] *= 2 * 5**(s-1) * splits # Last two is because there are two fast-forwardable terms in the Heisenberg Hamiltonian
+            cost_exponentials[h] *= 2 * 5**(s-1) * splits
         errors[h] = total_time*step_error[total_time][s][m][h]/h
 
     min_cost = np.inf
@@ -264,7 +264,7 @@ def minimize_cost_trotter(hs, s, total_time, total_error, step_error, trotter_ex
         m = 1
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
-            cost_exponentials[h] *= 2 * 5**(s-1) * splits # Last two is because there are two fast-forwardable terms in the Heisenberg Hamiltonian
+            cost_exponentials[h] *= 2 * 5**(s-1) * splits
         errors[h] = total_time*step_error[total_error][total_time][s][h]/h
 
     min_cost = np.inf

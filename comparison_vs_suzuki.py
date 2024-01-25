@@ -74,7 +74,7 @@ with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True):
+def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True, splits = 2):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -93,9 +93,7 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
     for h in hs:
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
-            cost_exponentials[h] *= 5**(s-1)
-        #if split_operator and m == 3 and s== 2: 
-        #    cost_exponentials[h] = 5**(s-1) * total_time/h # We can concatenate the first and last exponentials
+            cost_exponentials[h] *= 2 * 5**(s-1) * splits
         errors[h] = total_time*step_error[total_time][s][m][h]/h
 
     min_cost = np.inf
