@@ -419,7 +419,15 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ax.set_xlabel(r'Total time $T$')
     ax.set_ylabel(r'Number of fast-forwardable exponentials')
 
-    ax.set_title(f'Total error = {total_error}')
+    total_error_scientific = "{:e}".format(total_error)
+    coef, exp = total_error_scientific.split("e")
+
+    if coef == "1":
+        title = f'Total error = 10^{{{int(exp)}}}'
+    else:
+        title = f'Total error = {coef} * 10^{{{int(exp)}}}'
+
+    ax.set_title(title)
 
     # set logscale
     ax.set_yscale('log')
@@ -435,7 +443,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         for total_time in total_time_list: #todo: Change the step error and minimization function here.
             #min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
             #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
-            min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split, trotter_exponentials = True)
+            min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
             min_costs.append(min_cost)
             min_costs_h.append(min_cost_h)
 
@@ -457,7 +465,15 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ax.set_xlabel(r'Total time $T$')
     ax.set_ylabel(r'Number of fast-forwardable exponentials')
 
-    ax.set_title(f'Total error = ${convert_sci_to_readable('{:.1e}'.format(total_error))}$')
+    total_error_scientific = "{:e}".format(total_error)
+    coef, exp = total_error_scientific.split("e")
+
+    if float(coef) == 1:
+        number_str = f'10^{{{int(exp)}}}'
+    else:
+        number_str = f'{coef} \cdot 10^{{{int(exp)}}}'
+
+    ax.set_title(f'Total error = ${number_str}$')
 
     # set logscale
     ax.set_yscale('log')

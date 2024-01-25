@@ -175,7 +175,7 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
         f0 = fit[0]
     
         f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-        label = f's={s} m={m}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+        label = f's={s} m={m}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$' #todo: take
         line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
         lines_magnus.append(line)
 
@@ -187,7 +187,16 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ax.set_xlabel(r'Total time $T$')
     ax.set_ylabel(r'Number of fast-forwardable exponentials')
 
-    ax.set_title(f'Total error = ${convert_sci_to_readable('{:.1e}'.format(total_error))}$')
+    # Format as x * 10^y
+    total_error_scientific = "{:e}".format(total_error)
+    coef, exp = total_error_scientific.split("e")
+
+    if float(coef) == 1:
+        number_str = f'10^{{{int(exp)}}}'
+    else:
+        number_str = f'{coef} \cdot 10^{{{int(exp)}}}'
+
+    ax.set_title(f'Total error = ${number_str}$')
 
     # set logscale
     ax.set_yscale('log')
