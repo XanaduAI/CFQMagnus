@@ -187,7 +187,6 @@ for total_error, ax in zip(total_error_list, ax.flatten()):
     ax.set_xlabel(r'Total time $T$')
     ax.set_ylabel(r'Number of fast-forwardable exponentials')
 
-    # Format as x * 10^y
     total_error_scientific = "{:e}".format(total_error)
     coef, exp = total_error_scientific.split("e")
 

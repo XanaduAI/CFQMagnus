@@ -95,7 +95,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
         error += Psi_m_Taylor_error(h, maxp, s, m, overline_xs[s][m] * maxc, factorial, use_max = use_max or s > 4)
 
         # Error from the quadrature rule
-        qr = quadrature_residual(h, s, m, maxc = maxc)
+        qr = quadrature_residual(h, s, maxc = maxc)
         error += quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
 
 
@@ -287,8 +287,8 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     n: number of spins
     s: 2s is the order of the Magnus expansion
     m: number of exponentials in the Commutator Free Magnus operator
-    cs_split: list of the coefficients of the Magnus expansion in the basis of the Lie algebra
-    cs_y_split: list of the coefficients of the Magnus expansion in the basis of univariate integrals
+    overline_xs_split: list of the coefficients of the Magnus expansion in the basis of the Lie algebra
+    ys_split: list of the coefficients of the Magnus expansion in the basis of univariate integrals
     maxc: maximum value of the norm of the Hamiltonian and its derivatives
     maxp: maximum order of the Magnus expansion
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
@@ -311,7 +311,7 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     error += Psi_m_Taylor_error(h, maxp, s, m, overline_xs_split[s][m], factorial, use_max = use_max or s > 4)
 
     # Error from the quadrature rule
-    qr = quadrature_residual(h, s, m, maxc = maxc)
+    qr = quadrature_residual(h, s, maxc = maxc)
     error += quadrature_error(h, s, m, ys_split, maxc = maxc, qr = qr)
     
     return error

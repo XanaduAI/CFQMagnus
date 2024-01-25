@@ -289,7 +289,7 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
 
 ############## Quadrature error ###########################
 
-def quadrature_residual(h, s, m, maxc = 1):
+def quadrature_residual(h, s, maxc = 1):
     r'''
     Computes the error of the quadrature rule for the Magnus expansion of order 2s+1.
 
@@ -297,7 +297,6 @@ def quadrature_residual(h, s, m, maxc = 1):
     ----------
     h: step size
     s: 2s is the order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
     maxc: maximum value of the norm |a_j|
 
     Variables used
@@ -306,9 +305,9 @@ def quadrature_residual(h, s, m, maxc = 1):
     i: index of the univariate integral
     j: missing terms in the univariate integral, that constitute the error term
     '''
-    quadrature_residual = {}
-    for i in range(1,m+1):
-        quadrature_residual[i-1] = {}
+    quadrature_res = {}
+    for i in range(s):
+        quadrature_res[i] = {}
         n = 2*s
         partial_sums = []
         for j in range(0, 350):
@@ -318,9 +317,9 @@ def quadrature_residual(h, s, m, maxc = 1):
         partial_sums = np.array(partial_sums)
         partial_sums *= (math.factorial(n)/math.factorial(2*n))**3 * math.factorial(n)/(2*n+1) * h**(2*n+1-i)
 
-        quadrature_residual[i-1] = partial_sums[-1]
+        quadrature_res[i] = partial_sums[-1]
 
-    return quadrature_residual
+    return quadrature_res
 
 def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
     r'''
@@ -332,7 +331,7 @@ def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
     h: step size
     s: 2s is the order of the Magnus expansion
     m: number of exponentials in the Commutator Free Magnus operator
-    cs_y: list of the coefficients y_{i,j} of the Magnus expansion
+    ys: list of the coefficients y_{i,j} of the Magnus expansion #todo: change this
     maxc: maximum value of the norm |a_j|
     '''
 
@@ -341,8 +340,8 @@ def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
 
     error = 0
     for i in range(m):
-        for t in range(s):
-            error += qr[i] * abs(ys[s][m][i][t])
+        for j in range(s):
+            error += qr[j] * abs(ys[s][m][i][j])
 
     return error
 
@@ -580,7 +579,7 @@ def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
 
 ############## Basis change error ###########################
 
-def basis_change_error(h, s, m, cs_y, maxc = 1):
+def basis_change_error(h, s, m, ys, maxc = 1):
     r"""
     Computes the error of the basis change of the Magnus expansion of order 2s+1.
 
@@ -590,13 +589,13 @@ def basis_change_error(h, s, m, cs_y, maxc = 1):
     s: n = 2s is order of the Magnus expansion
     m: number of exponentials in the Commutator Free Magnus operator
     maxc: maximum value of the norm of the Hamiltonian and its derivatives
-    cs_y: list of the values of the quadrature rule
+    ys: list of the values of the quadrature rule
     """
 
     basis_change_error = 0
 
     for k in range(1, m+1):
         for j in range(s):
-            basis_change_error += abs(cs_y[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
+            basis_change_error += abs(ys[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
 
     return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
