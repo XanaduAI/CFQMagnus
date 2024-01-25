@@ -1,10 +1,16 @@
 import math
 from os import error
+from tkinter import font
 from matplotlib import lines
 import numpy as np
 import matplotlib.pyplot as plt
 import json
 import os
+
+import matplotlib.pyplot as plt
+import scienceplots
+
+plt.style.use('science')
 
 from magnus_errors import *
 
@@ -106,107 +112,109 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
 
 ########### Plot ###########
 # Generate 4 plots, for different total errors
-fig, ax = plt.subplots(2, 2, figsize = (10,10))
+with plt.style.context('science'):
 
-total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-colors = ['r', 'g', 'b', 'k']
-for total_error, ax in zip(total_error_list, ax.flatten()):
+    plot_letters = ['(a)', '(b)', '(c)', '(d)']
+    total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
+
+    colors = ['r', 'g', 'b', 'k']
+
+    for total_error, plot_letter in zip(total_error_list, plot_letters):
+        fig, ax = plt.subplots(1, 1, figsize = (4,4))
 
 
-    ########### Suzuki ###########
+        ########### Suzuki ###########
 
-    lines_suzuki = []  # List to store line instances for Suzuki
-    #linestyles = [(0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), 
-    #            (0, (3, 5, 1, 5, 1, 5)), (0, (3, 1, 1, 1, 1, 1))]
-    linestyles = ['--']*4
-    for s, c, style in zip(range_s, colors, linestyles):
-        min_costs = []
-        min_costs_h = []
-        for total_time in total_time_list:
-            min_costs_suzuki = np.inf
-            min_cost_h_suzuki = None
-            for h in hs:
-                r = total_time/h
-                error_suzuki = total_error / r
-                cost_suzuki = suzuki_wiebe_cost(h, s, total_time, error_suzuki)
-                if error_suzuki < total_error and cost_suzuki < min_costs_suzuki:
-                    min_costs_suzuki = cost_suzuki
-                    min_cost_h_suzuki = h
+        lines_suzuki = []  # List to store line instances for Suzuki
+        #linestyles = [(0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), 
+        #            (0, (3, 5, 1, 5, 1, 5)), (0, (3, 1, 1, 1, 1, 1))]
+        linestyles = ['--']*4
+        for s, c, style in zip(range_s, colors, linestyles):
+            min_costs = []
+            min_costs_h = []
+            for total_time in total_time_list:
+                min_costs_suzuki = np.inf
+                min_cost_h_suzuki = None
+                for h in hs:
+                    r = total_time/h
+                    error_suzuki = total_error / r
+                    cost_suzuki = suzuki_wiebe_cost(h, s, total_time, error_suzuki)
+                    if error_suzuki < total_error and cost_suzuki < min_costs_suzuki:
+                        min_costs_suzuki = cost_suzuki
+                        min_cost_h_suzuki = h
 
-            min_costs.append(min_costs_suzuki)
-            min_costs_h.append(min_cost_h_suzuki)
+                min_costs.append(min_costs_suzuki)
+                min_costs_h.append(min_cost_h_suzuki)
 
-        # Implement a log log fit of min_cost vs total_time
-        log_min_costs = np.log(np.array(min_costs))
-        log_total_time_list = np.log(np.array(total_time_list))
+            # Implement a log log fit of min_cost vs total_time
+            log_min_costs = np.log(np.array(min_costs))
+            log_total_time_list = np.log(np.array(total_time_list))
+            
+            # Fit a line
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+            f1 = fit[1]
+            f0 = fit[0]
+
+            f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+            label = f's={s}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
+            lines_suzuki.append(line)
+
+        legend1 = ax.legend(handles=lines_suzuki, loc = 'upper left', title = 'Suzuki',frameon=True)
+        ax.add_artist(legend1)
+
+        ########### CF Magnus ###########
+
+        lines_magnus = []  # List to store line instances for CF Magnus
+        linestyles = ['-']*4 #['-', (0, (5, 1)), '--', (0, (5, 10))]
+        for (s, m, c, style) in zip(range_s, range_m, colors, linestyles):
+            min_costs = []
+            min_costs_h = []
+            for total_time in total_time_list:
+                min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
+                min_costs.append(min_cost)
+                min_costs_h.append(min_cost_h)
+
+            # Implement a log log fit of min_cost vs total_time
+            log_min_costs = np.log(np.array(min_costs))
+            log_total_time_list = np.log(np.array(total_time_list))
+            
+            # Fit a line
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+            f1 = fit[1]
+            f0 = fit[0]
         
-        # Fit a line
-        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
-        f1 = fit[1]
-        f0 = fit[0]
+            f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+            label = f's={s} m={m}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$' #todo: take
+            line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
+            lines_magnus.append(line)
 
-        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-        label = f's={s}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
-        line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
-        lines_suzuki.append(line)
-
-    legend1 = ax.legend(handles=lines_suzuki, loc = 'upper left', title = 'Suzuki')
-    ax.add_artist(legend1)
-
-    ########### CF Magnus ###########
-
-    lines_magnus = []  # List to store line instances for CF Magnus
-    linestyles = ['-']*4 #['-', (0, (5, 1)), '--', (0, (5, 10))]
-    for (s, m, c, style) in zip(range_s, range_m, colors, linestyles):
-        min_costs = []
-        min_costs_h = []
-        for total_time in total_time_list:
-            min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
-            min_costs.append(min_cost)
-            min_costs_h.append(min_cost_h)
-
-        # Implement a log log fit of min_cost vs total_time
-        log_min_costs = np.log(np.array(min_costs))
-        log_total_time_list = np.log(np.array(total_time_list))
-        
-        # Fit a line
-        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
-        f1 = fit[1]
-        f0 = fit[0]
-    
-        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-        label = f's={s} m={m}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$' #todo: take
-        line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
-        lines_magnus.append(line)
-
-    legend2 = ax.legend(handles=lines_magnus, loc = 'lower right', title = 'CF Magnus')
-    ax.add_artist(legend2)
+        legend2 = ax.legend(handles=lines_magnus, loc = 'lower right', title = 'CF quasi-Magnus',frameon=True)
+        ax.add_artist(legend2)
 
 
-    # set x label
-    ax.set_xlabel(r'Total time $T$')
-    ax.set_ylabel(r'Number of fast-forwardable exponentials')
+        # set x label
+        ax.set_xlabel(r'Total time $T$', fontsize = 14)
+        ax.set_ylabel(r'Exponentials', fontsize = 14)
 
-    total_error_scientific = "{:e}".format(total_error)
-    coef, exp = total_error_scientific.split("e")
+        total_error_scientific = "{:e}".format(total_error)
+        coef, exp = total_error_scientific.split("e")
 
-    if float(coef) == 1:
-        number_str = f'10^{{{int(exp)}}}'
-    else:
-        number_str = f'{coef} \cdot 10^{{{int(exp)}}}'
+        if float(coef) == 1:
+            number_str = f'$10^{{{int(exp)}}}$'
+        else:
+            number_str = f'${coef} \cdot 10^{{{int(exp)}}}$'
 
-    ax.set_title(f'Total error = ${number_str}$')
+        ax.text(0.15, 0.03, f'{plot_letter} $\epsilon = $' + number_str , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
 
-    # set logscale
-    ax.set_yscale('log')
-    ax.set_xscale('log')
+        # set logscale
+        ax.set_yscale('log')
+        ax.set_xscale('log')
 
+        # Cambiar la fuente de los xticks
+        ax.tick_params(axis='x', labelsize = 14)
 
+        # Cambiar la fuente de los yticks
+        ax.tick_params(axis='y', labelsize = 14)
 
-#handles, labels = plt.gca().get_legend_handles_labels()
-#by_label = dict(zip(labels, handles))
-#plt.legend(by_label.values(), by_label.keys())
-
-#plt.show()
-# save figure #todo: change name here
-fig.savefig('figures/Magnus_vs_Suzuki.pdf', bbox_inches='tight')
+        fig.savefig(f'figures/Magnus_vs_Suzuki_{exp}.pdf', bbox_inches='tight')

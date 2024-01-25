@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import json
 import os
 
+import matplotlib.pyplot as plt
+import scienceplots
+
+plt.style.use('science')
+
 from magnus_errors import *
 
 # Get current directory
@@ -342,6 +347,7 @@ def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overlin
 # We first compute the error of a single step
 range_ss = [2, 3]
 range_ms = [12, 20]
+
 step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
 # json save step_error
 with open('results/step_error_CFMagnus_split.json', 'w') as f:
@@ -383,108 +389,123 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
 
 ########### Plot ###########
 # Generate 4 plots, for different total errors
-fig, ax = plt.subplots(2, 2, figsize = (10,10))
+with plt.style.context('science'):
 
-total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-colors = ['r', 'g', 'orange', 'b', 'purple', 'black']
-colors_s = ['g', 'b']
+    total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
+    plot_letters = ['(a)', '(b)', '(c)', '(d)']
 
-# Now we select is the total error
-for total_error, ax in zip(total_error_list, ax.flatten()):
-    for (s, m, c) in zip(range_s, range_m, colors):
-        min_costs = []
-        min_costs_h = []
-        for total_time in total_time_list: #todo: Change the step error and minimization function here.
-            min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
-            #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
-            #min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
-            min_costs.append(min_cost)
-            min_costs_h.append(min_cost_h)
-
-        # Implement a log log fit of min_cost vs total_time
-        log_min_costs = np.log(np.array(min_costs))
-        log_total_time_list = np.log(np.array(total_time_list))
-        
-        # Fit a line
-        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
-        f1 = fit[1]
-        f0 = fit[0]
-
-        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-        label = f's={s}, m={m}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
-        ax.plot(total_time_list, min_costs, label = label, color = c)
-        #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
-
-    # set x label
-    ax.set_xlabel(r'Total time $T$')
-    ax.set_ylabel(r'Number of fast-forwardable exponentials')
-
-    total_error_scientific = "{:e}".format(total_error)
-    coef, exp = total_error_scientific.split("e")
-
-    if coef == "1":
-        title = f'Total error = 10^{{{int(exp)}}}'
-    else:
-        title = f'Total error = {coef} * 10^{{{int(exp)}}}'
-
-    ax.set_title(title)
-
-    # set logscale
-    ax.set_yscale('log')
-    ax.set_xscale('log')
-
-    ax.legend()
-
+    colors = ['r', 'g', 'orange', 'b', 'purple', 'black']
+    colors_s = ['g', 'b']
 
     # Now we select is the total error
-    for (s, m, c) in zip(range_ss, range_ms, colors_s):
-        min_costs = []
-        min_costs_h = []
-        for total_time in total_time_list: #todo: Change the step error and minimization function here.
-            #min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
-            #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
-            min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
-            min_costs.append(min_cost)
-            min_costs_h.append(min_cost_h)
+    for total_error, plot_letter in zip(total_error_list, plot_letters):
+        fig, ax = plt.subplots(1, 1, figsize = (4,4))
 
-        # Implement a log log fit of min_cost vs total_time
-        log_min_costs = np.log(np.array(min_costs))
-        log_total_time_list = np.log(np.array(total_time_list))
-        
-        # Fit a line
-        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
-        f1 = fit[1]
-        f0 = fit[0]
+        lines_cfmagnus = []
+        for (s, m, c) in zip(range_s, range_m, colors):
+            min_costs = []
+            min_costs_h = []
+            for total_time in total_time_list: #todo: Change the step error and minimization function here.
+                min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True, splits = 2)
+                #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
+                #min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
+                min_costs.append(min_cost)
+                min_costs_h.append(min_cost_h)
 
-        f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-        label = f's={s}, $m_s={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
-        ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '--')
-        #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
+            # Implement a log log fit of min_cost vs total_time
+            log_min_costs = np.log(np.array(min_costs))
+            log_total_time_list = np.log(np.array(total_time_list))
+            
+            # Fit a line
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+            f1 = fit[1]
+            f0 = fit[0]
 
-    # set x label
-    ax.set_xlabel(r'Total time $T$')
-    ax.set_ylabel(r'Number of fast-forwardable exponentials')
+            f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+            label = f's={s}, m={m}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            line, = ax.plot(total_time_list, min_costs, label = label, color = c)
+            #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
+            lines_cfmagnus.append(line)
 
-    total_error_scientific = "{:e}".format(total_error)
-    coef, exp = total_error_scientific.split("e")
+        legend = ax.legend(handles=lines_cfmagnus, loc = 'upper left', title = 'CF quasi-Magnus',frameon=True)
+        ax.add_artist(legend)
 
-    if float(coef) == 1:
-        number_str = f'10^{{{int(exp)}}}'
-    else:
-        number_str = f'{coef} \cdot 10^{{{int(exp)}}}'
+        # set x label
+        #ax.set_xlabel(r'Total time $T$')
+        #ax.set_ylabel(r'Number of fast-forwardable exponentials')
 
-    ax.set_title(f'Total error = ${number_str}$')
+        total_error_scientific = "{:e}".format(total_error)
+        coef, exp = total_error_scientific.split("e")
 
-    # set logscale
-    ax.set_yscale('log')
-    ax.set_xscale('log')
+        if coef == "1":
+            title = f'Total error = 10^{{{int(exp)}}}'
+        else:
+            title = f'Total error = {coef} * 10^{{{int(exp)}}}'
 
-    ax.legend()
+        #ax.set_title(title)
 
-#handles, labels = plt.gca().get_legend_handles_labels()
-#by_label = dict(zip(labels, handles))
-#plt.legend(by_label.values(), by_label.keys())
+        # set logscale
+        ax.set_yscale('log')
+        ax.set_xscale('log')
 
-#plt.show()
-# save figure #todo: change name here
-fig.savefig('figures/commutator_free_magnus_error.pdf', bbox_inches='tight')
+        lines_split = []
+
+
+        # Now we select is the total error
+        for (s, m, c) in zip(range_ss, range_ms, colors_s):
+            min_costs = []
+            min_costs_h = []
+            for total_time in total_time_list: #todo: Change the step error and minimization function here.
+                #min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
+                #min_cost_h, min_cost = minimize_cost_trotter(hs, s, total_time, total_error, step_error = step_error_trotter, trotter_exponentials = True)
+                min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error = step_error_split)
+                min_costs.append(min_cost)
+                min_costs_h.append(min_cost_h)
+
+            # Implement a log log fit of min_cost vs total_time
+            log_min_costs = np.log(np.array(min_costs))
+            log_total_time_list = np.log(np.array(total_time_list))
+            
+            # Fit a line
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+            f1 = fit[1]
+            f0 = fit[0]
+
+            f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+            label = f's={s}, $m_s={m}$'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '--')
+            #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
+            lines_split.append(line)
+
+        legend2 = ax.legend(handles=lines_split, loc = 'lower right', title = 'CFQM split', frameon=True)
+        ax.add_artist(legend2)
+
+        # set x label
+        ax.set_xlabel(r'Total time $T$', size=14)
+        if plot_letter == '(a)':
+            ax.set_ylabel(r'Exponentials', size=14)
+        else:
+            ax.set_ylabel(r'', size=14)
+
+        total_error_scientific = "{:e}".format(total_error)
+        coef, exp = total_error_scientific.split("e")
+
+        if float(coef) == 1:
+            number_str = f'$10^{{{int(exp)}}}$'
+        else:
+            number_str = f'${coef} \cdot 10^{{{int(exp)}}}$'
+
+        ax.text(0.15, 0.03, f'{plot_letter} $\epsilon = $' + number_str , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
+
+        # set logscale
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+
+        # Cambiar la fuente de los xticks
+        ax.tick_params(axis='x', labelsize = 14)
+
+        # Cambiar la fuente de los yticks
+        ax.tick_params(axis='y', labelsize = 14)
+
+
+        fig.savefig(f'figures/commutator_free_magnus_{exp}.pdf', bbox_inches='tight')
