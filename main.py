@@ -87,7 +87,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
-        p += 1
+        p += 2
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -143,10 +143,10 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
     return step_error
 
 # We first compute the error of a single step
-#step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
+step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
 
-#with open('results/step_error_CFMagnus.json', 'w') as f:
-#    json.dump(step_error_cf, f)
+with open('results/step_error_CFMagnus.json', 'w') as f:
+    json.dump(step_error_cf, f)
 
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
@@ -203,7 +203,7 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
     omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = omega_error
     while last_correction/omega_error > 1e-5:
-        p += 1
+        p += 2
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -240,11 +240,11 @@ def compute_trotter_step_error(hs, range_s, maxp, total_time_list, use_max = Tru
     return trotter_error
 
 range_s_trotter = [1,2,3,4]
-#step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
+step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
 
 # json save step_error
-#with open('results/step_error_trotter.json', 'w') as f:
-#    json.dump(step_error_trotter, f)
+with open('results/step_error_trotter.json', 'w') as f:
+    json.dump(step_error_trotter, f)
 
 with open('results/step_error_trotter.json', 'r') as f:
     step_error_trotter = json.load(f, object_hook=convert_keys_to_float)
@@ -306,7 +306,7 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
-        p += 1
+        p += 2
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -349,10 +349,10 @@ def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overlin
 range_ss = [2, 3]
 range_ms = [12, 20]
 
-#step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
+step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
 # json save step_error
-#with open('results/step_error_CFMagnus_split.json', 'w') as f:
-#    json.dump(step_error_split, f)
+with open('results/step_error_CFMagnus_split.json', 'w') as f:
+    json.dump(step_error_split, f)
 
 with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
