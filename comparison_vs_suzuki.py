@@ -1,6 +1,4 @@
 import math
-from os import error
-from tkinter import font
 from matplotlib import lines
 import numpy as np
 import matplotlib.pyplot as plt
@@ -73,8 +71,8 @@ total_time_list = [2**i for i in range(3, 15)]
 
 
 # We first compute the error of a single step
-range_s = [1,2,3,4]
-range_m = [1,2,5,11]
+range_s = [1,2,3]#,4]
+range_m = [1,2,5]#,11]
 
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
@@ -117,7 +115,7 @@ with plt.style.context('science'):
     plot_letters = ['(a)', '(b)', '(c)', '(d)']
     total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 
-    colors = ['r', 'g', 'b', 'k']
+    colors = ['r', 'g', 'b']#, 'k']
 
     for total_error, plot_letter in zip(total_error_list, plot_letters):
         fig, ax = plt.subplots(1, 1, figsize = (4,4))
@@ -128,7 +126,7 @@ with plt.style.context('science'):
         lines_suzuki = []  # List to store line instances for Suzuki
         #linestyles = [(0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), 
         #            (0, (3, 5, 1, 5, 1, 5)), (0, (3, 1, 1, 1, 1, 1))]
-        linestyles = ['--']*4
+        linestyles = ['--']*3
         for s, c, style in zip(range_s, colors, linestyles):
             min_costs = []
             min_costs_h = []
@@ -166,7 +164,7 @@ with plt.style.context('science'):
         ########### CF Magnus ###########
 
         lines_magnus = []  # List to store line instances for CF Magnus
-        linestyles = ['-']*4 #['-', (0, (5, 1)), '--', (0, (5, 10))]
+        linestyles = ['-']*3 #['-', (0, (5, 1)), '--', (0, (5, 10))]
         for (s, m, c, style) in zip(range_s, range_m, colors, linestyles):
             min_costs = []
             min_costs_h = []
@@ -195,7 +193,8 @@ with plt.style.context('science'):
 
         # set x label
         ax.set_xlabel(r'Total time $T$', fontsize = 14)
-        ax.set_ylabel(r'Exponentials', fontsize = 14)
+        if plot_letter == '(a)':
+            ax.set_ylabel(r'Exponentials', fontsize = 14)
 
         total_error_scientific = "{:e}".format(total_error)
         coef, exp = total_error_scientific.split("e")

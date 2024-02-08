@@ -64,8 +64,8 @@ total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [2**i for i in range(3, 15)]
 
 ########### Commutator Free Magnus ###########
-range_s = [1, 2, 2, 3, 3, 4]
-range_m = [1, 2, 3, 5, 6, 11]
+range_s = [1, 2, 2, 3, 3]#, 4]
+range_m = [1, 2, 3, 5, 6]#, 11]
 
 def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True):
     r"""
@@ -105,7 +105,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
 
 
     # Error from the Trotter product formula
-    #error += trotter_error_spu_formula(n, h, s, u = maxc)
+    # error += trotter_error_spu_formula(n, h, s, u = maxc) * m
     
     return error
 
@@ -138,14 +138,15 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
                 step_error[n][s] = {}
             step_error[n][s][m] = {}
             for h in hs:
-                step_error[n][s][m][h] = float(step_error_wout_trotter[s][m][h] + trotter_error_spu_formula(n, h, s, u = 1))
+                step_error[n][s][m][h] = float(step_error_wout_trotter[s][m][h] + 
+                                               trotter_error_spu_formula(n, h, s, u = 1) * m) # m exponentials to be Trotterized
     return step_error
 
 # We first compute the error of a single step
-step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
+#step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
 
-with open('results/step_error_CFMagnus.json', 'w') as f:
-    json.dump(step_error_cf, f)
+#with open('results/step_error_CFMagnus.json', 'w') as f:
+#    json.dump(step_error_cf, f)
 
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
@@ -239,11 +240,11 @@ def compute_trotter_step_error(hs, range_s, maxp, total_time_list, use_max = Tru
     return trotter_error
 
 range_s_trotter = [1,2,3,4]
-step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
+#step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
 
 # json save step_error
-with open('results/step_error_trotter.json', 'w') as f:
-    json.dump(step_error_trotter, f)
+#with open('results/step_error_trotter.json', 'w') as f:
+#    json.dump(step_error_trotter, f)
 
 with open('results/step_error_trotter.json', 'r') as f:
     step_error_trotter = json.load(f, object_hook=convert_keys_to_float)
@@ -348,10 +349,10 @@ def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overlin
 range_ss = [2, 3]
 range_ms = [12, 20]
 
-step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
+#step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
 # json save step_error
-with open('results/step_error_CFMagnus_split.json', 'w') as f:
-    json.dump(step_error_split, f)
+#with open('results/step_error_CFMagnus_split.json', 'w') as f:
+#    json.dump(step_error_split, f)
 
 with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
@@ -399,6 +400,7 @@ with plt.style.context('science'):
 
     # Now we select is the total error
     for total_error, plot_letter in zip(total_error_list, plot_letters):
+
         fig, ax = plt.subplots(1, 1, figsize = (4,4))
 
         lines_cfmagnus = []
