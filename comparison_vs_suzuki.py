@@ -65,7 +65,7 @@ factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
-hs = [1/2**(i/4+3) for i in range(1,125)]
+hs = [1/2**(i/5+3) for i in range(1,150)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [2**i for i in range(3, 15)]
 
@@ -155,6 +155,7 @@ with plt.style.context('science'):
 
             f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
             label = f's={s}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            print(f'Suzuki, s={s}, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
             line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
             lines_suzuki.append(line)
 
@@ -184,7 +185,10 @@ with plt.style.context('science'):
         
             f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
             label = f's={s} m={m}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$' #todo: take
+            print(f'CFQM, s={s}, $m={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
             line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = style)
+            #for i, txt in enumerate(min_costs_h):
+            #    ax.annotate("{:.0e}".format(txt), (total_time_list[i], min_costs[i]))
             lines_magnus.append(line)
 
         legend2 = ax.legend(handles=lines_magnus, loc = 'lower right', title = 'CF quasi-Magnus',frameon=True)
@@ -204,7 +208,7 @@ with plt.style.context('science'):
         else:
             number_str = f'${coef} \cdot 10^{{{int(exp)}}}$'
 
-        ax.text(0.15, 0.03, f'{plot_letter} $\epsilon = $' + number_str , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
+        ax.text(0.3, 0.9, f'{plot_letter} $\epsilon = $' + number_str , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
 
         # set logscale
         ax.set_yscale('log')

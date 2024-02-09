@@ -59,7 +59,7 @@ factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
-hs = [1/2**(i/4+3) for i in range(1,125)]
+hs = [1/2**(i/5+3) for i in range(1,150)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [2**i for i in range(3, 15)]
 
@@ -105,11 +105,11 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
 
 
     # Error from the Trotter product formula
-    # error += trotter_error_spu_formula(n, h, s, u = maxc) * m
+    # error += trotter_error_spu_formula(n, h/Z, s, u = maxc) * m
     
     return error
 
-def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max = True, overline_xs = overline_xs, ys = ys):
+def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max = True, overline_xs = overline_xs, ys = ys, zs = zs):
     r"""
     Computes a dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
 
@@ -134,12 +134,13 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
     for n in tqdm(total_time_list, desc = 'time'):  
         step_error[n] = {}
         for (s, m) in tqdm(zip(range_s, range_m), desc = 's, m'):
+            Z = np.max(np.sum(np.abs(zs[s][m]), axis = 1)) * 4*n if s > 1 else 4*n
             if s not in step_error[n].keys():
                 step_error[n][s] = {}
             step_error[n][s][m] = {}
             for h in hs:
                 step_error[n][s][m][h] = float(step_error_wout_trotter[s][m][h] + 
-                                               trotter_error_spu_formula(n, h, s, u = 1) * m) # m exponentials to be Trotterized
+                                        trotter_error_spu_formula(n, h/Z, s, u = 1) * m) # m exponentials to be Trotterized
     return step_error
 
 # We first compute the error of a single step
@@ -211,7 +212,7 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
     error += omega_error
 
     # Error from the Trotter product formula
-    error += trotter_error_spu_formula(n, h, s, u = maxc)
+    error += trotter_error_spu_formula(n, h/(4*n), s, u = maxc)
 
     return error
 
@@ -374,14 +375,14 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
 
     cost_exponentials = {}
     errors = {}
-    for h in hs:
+    for h in step_error[s][m].keys():
         cost_exponentials[h] = total_time*m/h
         #if trotter_exponentials: # No need to Trotterize the exponentials in the split-operator case
         #    cost_exponentials[h] *= 2 * 5**(s-1)
         errors[h] = total_time*step_error[s][m][h]/h
 
     min_cost = np.inf
-    for h in hs:
+    for h in step_error[s][m].keys():
         if errors[h] < total_error and cost_exponentials[h] < min_cost:
             min_cost_h = h
             min_cost = cost_exponentials[h]
@@ -419,13 +420,28 @@ with plt.style.context('science'):
             log_total_time_list = np.log(np.array(total_time_list))
             
             # Fit a line
-            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
+            fit = np.polyfit(log_total_time_list[-3:], log_min_costs[-3:], 1)
             f1 = fit[1]
             f0 = fit[0]
 
             f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
             label = f's={s}, m={m}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
             line, = ax.plot(total_time_list, min_costs, label = label, color = c)
+            #for i, txt in enumerate(min_costs_h):
+            #    ax.annotate("{:.1e}".format(total_time_list[i]), (total_time_list[i], min_costs[i]))
+            print(f'CFQM right, s={s}, $m={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
+
+            fit = np.polyfit(log_total_time_list[:2], log_min_costs[:2], 1)
+            f1 = fit[1]
+            f0 = fit[0]
+
+            f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
+            label = f's={s}, m={m}'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            line, = ax.plot(total_time_list, min_costs, label = label, color = c)
+            #for i, txt in enumerate(min_costs_h):
+            #    ax.annotate("{:.1e}".format(total_time_list[i]), (total_time_list[i], min_costs[i]))
+            #print(f'CFQM left, s={s}, $m={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
+
             #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
             lines_cfmagnus.append(line)
 
@@ -475,6 +491,7 @@ with plt.style.context('science'):
 
             f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
             label = f's={s}, $m_s={m}$'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            print(f'CFQMsplit s={s}, $m_s={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
             line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '--')
             #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
             lines_split.append(line)

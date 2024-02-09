@@ -361,8 +361,8 @@ def trotter_error_spu_formula(n, h, s, u = 1):
     error = np.longdouble(0)
 
     for k in range(1, stages+1):
-        error += n * (2*k-1)**p * (k*u) * (2*u)**p * (2*k-2)**p * h**(2*p+1) / math.factorial(p+1)
-        error += n * (2*k+1)**p * (k*u) * (2*u)**p * (2*k)**p * h**(2*p+1) / math.factorial(p+1)
+        error += n * (2*k-1)**p * (k*u) * (2*u)**p * (2*k-2)**p * h**(p+1) / math.factorial(p+1)
+        error += n * (2*k+1)**p * (k*u) * (2*u)**p * (2*k)**p * h**(p+1) / math.factorial(p+1)
 
     return error
 
