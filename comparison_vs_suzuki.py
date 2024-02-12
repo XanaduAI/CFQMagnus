@@ -65,9 +65,9 @@ factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
-hs = [1/2**(i/5+3) for i in range(1,150)]
+hs = [1/2**(i/5+3) for i in range(1,250)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-total_time_list = [2**i for i in range(3, 15)]
+total_time_list = [int(2**(i/2)) for i in range(5, 41)]
 
 
 # We first compute the error of a single step

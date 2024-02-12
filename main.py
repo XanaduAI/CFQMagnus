@@ -59,9 +59,9 @@ factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
-hs = [1/2**(i/5+3) for i in range(1,150)]
+hs = [1/2**(i/5+3) for i in range(1,250)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-total_time_list = [2**i for i in range(3, 15)]
+total_time_list = [int(2**(i/2)) for i in range(5, 41)]
 
 ########### Commutator Free Magnus ###########
 range_s = [1, 2, 2, 3, 3]#, 4]
@@ -490,7 +490,7 @@ with plt.style.context('science'):
             f0 = fit[0]
 
             f1_formatted = convert_sci_to_readable('{:.2e}'.format(np.exp(f1)))
-            label = f's={s}, $m_s={m}$'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
+            label = f'$s={s}$, $m={m}$'#, ${f1_formatted}\cdot T^{{{f0:.2f}}}$'
             print(f'CFQMsplit s={s}, $m_s={m}$, ${f1_formatted}\cdot T^{{{f0:.2f}}}$')
             line, = ax.plot(total_time_list, min_costs, label = label, color = c, linestyle = '--')
             #ax.plot(total_time_list, min_costs, label = f's={s} m={m}', color = c)
