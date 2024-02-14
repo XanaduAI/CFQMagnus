@@ -8,6 +8,10 @@ import scienceplots
 
 from magnus_errors import *
 
+plt.rc('text', usetex=True)
+plt.rcParams['text.latex.preamble'] = r'\usepackage{mathrsfs}'
+
+
 # Get current directory
 dir_path = os.path.dirname(os.path.realpath(__file__))
 save_path = os.path.join(dir_path, 'coefficients')
@@ -59,10 +63,10 @@ total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
 total_time_list = [int(2**(i/2)) for i in range(5, 41)]
 
 # We first compute the error of a single step
-range_s = [2,3]#,4]
-range_m = [2,5]#,11]
+range_s = [2,2,3,3]#,4]
+range_m = [2,3,5,6]#,11]
 
-def error_list(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True, n = None):
+def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_max = True, n = None):
     r"""
     h: step size
     n: number of spins
@@ -75,7 +79,7 @@ def error_list(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True, n 
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
     """
     error = {}
-    error_list = []
+    error_l = []
 
     # First, we add the error from the Taylor truncation of Omega
     p = 2*s+1
@@ -88,7 +92,7 @@ def error_list(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True, n 
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
         exp_omega_error += last_correction
     error['exp_Magnus_Taylor'] = exp_omega_error
-    error_list.append(exp_omega_error)
+    error_l.append(exp_omega_error)
 
     if s>1:
     # Error from the Taylor expansion of the exponential of the Magnus expansion
@@ -96,39 +100,41 @@ def error_list(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True, n 
 
         # Error from the Taylor expansion of the product of exponentials in the commutator-free operator
         error['Psi_m_Taylor'] = Psi_m_Taylor_error(h, maxp, s, m, overline_xs[s][m], factorial, use_max = use_max or s > 4)
-        error_list.append(error['Psi_m_Taylor'])
+        error_l.append(error['Psi_m_Taylor'])
 
         # Error from the quadrature rule
         qr = quadrature_residual(h, s, maxc = maxc)
         error['Quadrature'] = quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
-        error_list.append(error['Quadrature'])
+        error_l.append(error['Quadrature'])
 
 
     else:
         error['Psi_m_Taylor'] = 0
         error['Quadrature'] = 0
-        error_list += [0,0]
+        error_l += [0,0]
 
 
     # Error from the Trotter product formula
     Z = np.max(np.sum(np.abs(zs[s][m]), axis = 1)) * 4*n if s > 1 else 4*n
-    error['Trotter'] = trotter_error_spu_formula(n, h/Z, s, u = maxc)
-    error_list.append(error['Trotter'])
+    error['Trotter'] = trotter_error_spu_formula(n, h/Z, s, u = maxc) * m
+    error_l.append(error['Trotter'])
 
-    suma = np.sum(error_list)
+    suma = np.sum(error_l)
+    true_sum = step_error[n][s][m][h]
+    assert(np.isclose(suma, true_sum))
 
-    result = np.array(error_list) / suma
+    result = np.array(error_l) / suma
     assert(np.abs(np.sum(result) - 1) < 1e-10)
     
     return result
 
-labels = ['$\exp(\Omega)$ Taylor', '$\Tilde{\Psi}_m^{[2s]}$ Taylor', 'Quadrature', 'Trotter']
+labels = ['$\exp(\Omega)$ Taylor', 'CFQM Taylor', 'Quadrature', 'Trotter']
 
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True, splits = 2):
+def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, n = 128, trotter_exponentials = True, splits = 2):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -148,7 +154,7 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
         cost_exponentials[h] = total_time*m/h
         if trotter_exponentials: 
             cost_exponentials[h] *= 2 * 5**(s-1) * splits
-        errors[h] = total_time*step_error[total_time][s][m][h]/h
+        errors[h] = total_time*step_error[n][s][m][h]/h
 
     min_cost = np.inf
     for h in hs:
@@ -176,8 +182,10 @@ with plt.style.context('science'):
         min_costs = []
         min_costs_h = []
         for count, total_time in enumerate(total_time_list):
-            min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True)
-            error_array[count] = error_list(min_cost_h, s, m, overline_xs, ys, n = total_time)
+            #todo: change depending on whether we want n = fixed or n = total_time
+            n = total_time
+            min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, n = n, trotter_exponentials = True)
+            error_array[count] = error_list(min_cost_h, s, m, overline_xs, ys, step_error = step_error_cf, n = n)
             #for j in range(len(error_lista)):
             #    ax.bar(total_time, error_lista[j], bottom=np.sum(error_lista[:j]), color=colors[j], label = labels[j])
         cummulative = np.zeros(len(error_array))
@@ -191,7 +199,7 @@ with plt.style.context('science'):
         if l == 'a':
             ax.set_ylabel(r'Error contribution')
 
-        ax.text(0.25, 0.9, f'({l}) $s$ = {s}, $m$ = {m}', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+        ax.text(0.27, 0.9, f'({l}) $s$ = {s}, $m$ = {m}', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
 
         #ax.set_title(f'Total error = {total_error}')
 
