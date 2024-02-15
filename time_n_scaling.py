@@ -60,19 +60,27 @@ for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
 hs = [1/2**(i/5+3) for i in range(1,250)]
-total_time = 1024
-total_error_list = [1/2**i for i in range(6, 22)]
+total_time_list = [int(2**(i/2)) for i in range(5, 41)]
 
 ########### Commutator Free Magnus ###########
+range_s = [1, 2, 2, 3, 3]#, 4]
+range_m = [1, 2, 3, 5, 6]#, 11]
 
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
+# Then we will first create a function to find the minimum cost
+
 ########### Commutation-free Magnus split-operator ###########
+
+# We first compute the error of a single step
+range_ss = [2, 3]
+range_ms = [12, 20]
 
 with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
+# Then we will first create a function to find the minimum cost
 ########### Plot ###########
 # Generate 4 plots, for different total errors
 with plt.style.context('science'):
@@ -103,42 +111,34 @@ with plt.style.context('science'):
         for (m, c) in zip(range_m, colors):
             min_costs = []
             min_costs_h = []
-            for total_error in total_error_list:
+            for total_time in total_time_list:
                 min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, 
                                                             step_error = step_error_cf, 
                                                             trotter_exponentials = True, 
-                                                            splits = 2, n = 128)
+                                                            splits = 2, n = total_time)
                 min_costs.append(min_cost)
                 min_costs_h.append(min_cost_h)
 
             # Implement a log log fit of min_cost vs total_time
             log_min_costs = np.log(np.array(min_costs))
-            log_total_error_list = np.log(np.array(total_error_list))
+            log_total_time_list = np.log(np.array(total_time_list))
             
             # Fit a line
-            fit = np.polyfit(log_total_error_list, log_min_costs, 1)
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
             f1 = fit[1]
             f0 = fit[0]
 
             f1_formatted = convert_sci_to_readable('{:.4e}'.format(np.exp(f1)))
-            label = f'CFQM $m={m}$'#, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$'
-            ax.scatter(total_error_list, min_costs, label = label, facecolors='none', edgecolors=c, s = 5)
-            print(f'CFQM right, $s={s}$, $m={m}$, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$')
-
-            # Calculate fitted line
-            fitted_y_values = np.exp(f1) * total_error_list ** f0
-
-            # Plot fitted line
-            ax.plot(total_error_list, fitted_y_values, color = c)
-
-            f1_formatted = convert_sci_to_readable('{:.4e}'.format(np.exp(f1)))
+            label = f'CFQM $m={m}$'#, ${f1_formatted}\cdot T^{{{f0:.5f}}}$'
+            ax.scatter(total_time_list, min_costs, label = label, color = c, s = 5, marker = '^')
+            print(f'CFQM right, s={s}, $m={m}$, ${f1_formatted}\cdot T^{{{f0:.5f}}}$')
 
 
         # CFQM split
         for (ms, c) in zip(range_ms, [colors[2]]):
             min_costs = []
             min_costs_h = []
-            for total_error in total_error_list:
+            for total_time in total_time_list:
                 min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, ms, total_time, total_error, 
                                                                     step_error = step_error_split)
                 min_costs.append(min_cost)
@@ -146,26 +146,26 @@ with plt.style.context('science'):
 
             # Implement a log log fit of min_cost vs total_time
             log_min_costs = np.log(np.array(min_costs))
-            log_total_error_list = np.log(np.array(total_error_list))
+            log_total_time_list = np.log(np.array(total_time_list))
             
             # Fit a line
-            fit = np.polyfit(log_total_error_list, log_min_costs, 1)
+            fit = np.polyfit(log_total_time_list, log_min_costs, 1)
             f1 = fit[1]
             f0 = fit[0]
 
             f1_formatted = convert_sci_to_readable('{:.4e}'.format(np.exp(f1)))
-            label = f'CFQM split $m_s={ms}$'#, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$'
-            print(f'CFQM split, $s={s}$ $m_s={ms}$, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$')
-            ax.scatter(total_error_list, min_costs, label = label, facecolors='none', edgecolors=c, s = 5)
+            label = f'CFQM split $m_s={ms}$'#, ${f1_formatted}\cdot T^{{{f0:.5f}}}$'
+            print(f'CFQM split, $s={s}$ $m_s={ms}$, ${f1_formatted}\cdot T^{{{f0:.5f}}}$')
+            ax.scatter(total_time_list, min_costs, label = label, color = c, s = 5, marker = '*')
 
-            fitted_y_values = np.exp(f1) * total_error_list ** f0
-            ax.plot(total_error_list, fitted_y_values, color = c, linestyle = '--')
+            fitted_y_values = np.exp(f1) * total_time_list ** f0
+            #ax.plot(total_time_list, fitted_y_values, color = c, linestyle = '--')
 
 
         # Suzuki
         min_costs = []
         min_costs_h = []
-        for total_error in total_error_list:
+        for total_time in total_time_list:
             min_costs_suzuki = np.inf
             min_cost_h_suzuki = None
             for h in hs:
@@ -181,17 +181,17 @@ with plt.style.context('science'):
 
         # Implement a log log fit of min_cost vs total_time
         log_min_costs = np.log(np.array(min_costs))
-        log_total_error_list = np.log(np.array(total_error_list))
+        log_total_time_list = np.log(np.array(total_time_list))
         
         # Fit a line
-        fit = np.polyfit(log_total_error_list, log_min_costs, 1)
+        fit = np.polyfit(log_total_time_list, log_min_costs, 1)
         f1 = fit[1]
         f0 = fit[0]
 
         f1_formatted = convert_sci_to_readable('{:.4e}'.format(np.exp(f1)))
-        label = f'Suzuki'#, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$'
-        print(f'Suzuki, s={s}, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$')
-        line, = ax.plot(total_error_list, min_costs, label = label, color = colors[3], linestyle = '-.')
+        label = f'Suzuki'#, ${f1_formatted}\cdot T^{{{f0:.5f}}}$'
+        print(f'Suzuki, $s={s}$, ${f1_formatted}\cdot T^{{{f0:.5f}}}$')
+        ax.scatter(total_time_list, min_costs, label = label, color = colors[3], s = 5, marker = 'o')
 
         # Cambiar la fuente de los xticks
         ax.tick_params(axis='x', labelsize = 14)
@@ -203,17 +203,18 @@ with plt.style.context('science'):
         ax.set_yscale('log')
         ax.set_xscale('log')
 
-        ax.set_ylim([7e5, 2e9])
+        #ax.set_ylim([1e3, 7e9])
 
         # set x label
-        ax.set_xlabel(r'Total error $\epsilon$', size=14)
+        ax.set_xlabel(r'Total time $T = n$', size=14)
         if letter == '(a)':
             ax.set_ylabel(r'Exponentials', size=14)
         else:
             ax.set_ylabel(r'', size=14)
 
-        ax.text(0.05, 0.05, f'{letter} $s = {s}$' , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
+        ax.text(0.5, 0.07, f'{letter} $s = {s}$' , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
 
-        ax.legend()
+        ax.legend(loc = 'upper left')
 
-        fig.savefig(f'figures/error_scaling_{letter}.pdf', bbox_inches='tight')
+
+        fig.savefig(f'figures/time_n_scaling_{letter}.pdf', bbox_inches='tight')

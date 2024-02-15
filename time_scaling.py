@@ -69,37 +69,6 @@ range_m = [1, 2, 3, 5, 6]#, 11]
 with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
-# Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, n = 128, trotter_exponentials = True, splits = 2):
-    r"""
-    Finds the step size that minimizes the cost of a Magnus expansion.
-
-    Parameters
-    ----------
-    hs: list of step sizes
-    s: 2s is the order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
-    total_time: total time of the simulation
-    total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
-    """
-
-    cost_exponentials = {}
-    errors = {}
-    for h in hs:
-        cost_exponentials[h] = total_time*m/h
-        if trotter_exponentials: 
-            cost_exponentials[h] *= 2 * 5**(s-1) * splits
-        errors[h] = total_time*step_error[n][s][m][h]/h
-
-    min_cost = np.inf
-    for h in hs:
-        if errors[h] < total_error and cost_exponentials[h] < min_cost:
-            min_cost_h = h
-            min_cost = cost_exponentials[h]
-
-    return min_cost_h, min_cost
-
 ########### Commutation-free Magnus split-operator ###########
 
 # We first compute the error of a single step
@@ -108,37 +77,6 @@ range_ms = [12, 20]
 
 with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
-
-# Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
-    r"""
-    Finds the step size that minimizes the cost of a Magnus expansion.
-
-    Parameters
-    ----------
-    hs: list of step sizes
-    s: 2s is the order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
-    total_time: total time of the simulation
-    total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
-    """
-
-    cost_exponentials = {}
-    errors = {}
-    for h in hs:
-        cost_exponentials[h] = total_time*m/h
-        #if trotter_exponentials: # No need to Trotterize the exponentials in the split-operator case
-        #    cost_exponentials[h] *= 2 * 5**(s-1)
-        errors[h] = total_time*step_error[s][m][h]/h
-
-    min_cost = np.inf
-    for h in hs:
-        if errors[h] < total_error and cost_exponentials[h] < min_cost:
-            min_cost_h = h
-            min_cost = cost_exponentials[h]
-
-    return min_cost_h, min_cost
 
 ########### Plot ###########
 # Generate 4 plots, for different total errors
@@ -171,7 +109,10 @@ with plt.style.context('science'):
             min_costs = []
             min_costs_h = []
             for total_time in total_time_list:
-                min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error = step_error_cf, trotter_exponentials = True, splits = 2)
+                min_cost_h, min_cost = minimize_cost_CFMagnus(hs, s, m, total_time, total_error, 
+                                                            step_error = step_error_cf, 
+                                                            trotter_exponentials = True, 
+                                                            splits = 2, n = 128)
                 min_costs.append(min_cost)
                 min_costs_h.append(min_cost_h)
 
@@ -185,7 +126,7 @@ with plt.style.context('science'):
             f0 = fit[0]
 
             f1_formatted = convert_sci_to_readable('{:.4e}'.format(np.exp(f1)))
-            label = f'CFQM m={m}'#, ${f1_formatted}\cdot T^{{{f0:.5f}}}$'
+            label = f'CFQM $m={m}$'#, ${f1_formatted}\cdot T^{{{f0:.5f}}}$'
             ax.scatter(total_time_list, min_costs, label = label, facecolors='none', edgecolors=c, s = 5)
             print(f'CFQM right, s={s}, $m={m}$, ${f1_formatted}\cdot \epsilon^{{{f0:.5f}}}$')
 
@@ -203,7 +144,8 @@ with plt.style.context('science'):
             min_costs = []
             min_costs_h = []
             for total_time in total_time_list:
-                min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, ms, total_time, total_error, step_error = step_error_split)
+                min_cost_h, min_cost = minimize_cost_CFMagnus_split(hs, s, ms, total_time, total_error, 
+                                                                    step_error = step_error_split)
                 min_costs.append(min_cost)
                 min_costs_h.append(min_cost_h)
 
@@ -277,7 +219,7 @@ with plt.style.context('science'):
 
         ax.text(0.5, 0.07, f'{letter} $s = {s}$' , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
 
-        ax.legend(loc = 'upper left',frameon=True)
+        ax.legend(loc = 'upper left')
 
 
         fig.savefig(f'figures/time_scaling_{letter}.pdf', bbox_inches='tight')
