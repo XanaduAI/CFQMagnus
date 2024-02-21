@@ -60,7 +60,7 @@ for i in range(0, 75):
 
 hs = [1/2**(i/5+3) for i in range(1,125)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
-total_time_list = [int(2**(i/2)) for i in range(5, 41)]
+total_time_list = [int(2**(i/2)) for i in range(5, 29)]
 
 # We first compute the error of a single step
 range_s = [2,2,3,3]#,4]

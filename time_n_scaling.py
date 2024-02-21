@@ -60,7 +60,7 @@ for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
 hs = [1/2**(i/5+3) for i in range(1,250)]
-total_time_list = [int(2**(i/2)) for i in range(5, 41)]
+total_time_list = [int(2**(i/2)) for i in range(5, 29)]
 
 ########### Commutator Free Magnus ###########
 range_s = [1, 2, 2, 3, 3]#, 4]

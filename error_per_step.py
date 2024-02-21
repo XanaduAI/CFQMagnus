@@ -97,7 +97,7 @@ with plt.style.context('science'):
     ax.set_ylabel('Error $\epsilon$', fontsize = 14)
 
     ax.set_ylim([1e-10, 1e-2])
-    ax.set_xlim([3e-4, 1e-1])
+    ax.set_xlim([1e-3, 1e-1])
 
     plt.xticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje x
     plt.yticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje y
