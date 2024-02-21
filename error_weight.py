@@ -86,7 +86,7 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5: #todo: change 1e-5
-        p += 2
+        p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -115,8 +115,8 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
 
 
     # Error from the Trotter product formula
-    Z = np.max(np.sum(np.abs(zs[s][m]), axis = 1)) * 4*n if s > 1 else 4*n
-    error['Trotter'] = trotter_error_spu_formula(n, h/Z, s, u = maxc) * m
+    Z = np.sum(np.abs(zs[s][m]), axis = 1) / (4*n) if m > 1 else np.array([1/(4*n)])
+    error['Trotter'] = np.sum([trotter_error_spu_formula(n, Z_*h, s, u = 1) for Z_ in Z])
     error_l.append(error['Trotter'])
 
     suma = np.sum(error_l)
@@ -134,36 +134,6 @@ with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, n = 128, trotter_exponentials = True, splits = 2):
-    r"""
-    Finds the step size that minimizes the cost of a Magnus expansion.
-
-    Parameters
-    ----------
-    hs: list of step sizes
-    s: 2s is the order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
-    total_time: total time of the simulation
-    total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
-    """
-
-    cost_exponentials = {}
-    errors = {}
-    for h in hs:
-        cost_exponentials[h] = total_time*m/h
-        if trotter_exponentials: 
-            cost_exponentials[h] *= 2 * 5**(s-1) * splits
-        errors[h] = total_time*step_error[n][s][m][h]/h
-
-    min_cost = np.inf
-    for h in hs:
-        if errors[h] < total_error and cost_exponentials[h] < min_cost:
-            min_cost_h = h
-            min_cost = cost_exponentials[h]
-
-    return min_cost_h, min_cost
-
 ########### Plot ###########
 # Generate 4 plots, for different total errors
 with plt.style.context('science'):

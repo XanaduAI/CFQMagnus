@@ -655,7 +655,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
-        p += 2
+        p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -702,13 +702,14 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
     for n in tqdm(total_time_list, desc = 'time'):  
         step_error[n] = {}
         for (s, m) in tqdm(zip(range_s, range_m), desc = 's, m'):
-            Z = np.max(np.sum(np.abs(zs[s][m]), axis = 1)) * 4*n if s > 1 else 4*n
+            Z = np.sum(np.abs(zs[s][m]), axis = 1) / (4*n) if m > 1 else np.array([1/(4*n)])
+            assert len(Z) == m
             if s not in step_error[n].keys():
                 step_error[n][s] = {}
             step_error[n][s][m] = {}
             for h in hs:
                 step_error[n][s][m][h] = float(step_error_wout_trotter[s][m][h] + 
-                                        trotter_error_spu_formula(n, h/Z, s, u = 1) * m) # m exponentials to be Trotterized
+                                        np.sum([trotter_error_spu_formula(n, Z_*h, s, u = 1) for Z_ in Z])) # m exponentials to be Trotterized
     return step_error
 
 def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True, splits = 2, n = None):
@@ -769,7 +770,7 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
-        p += 2
+        p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
@@ -860,7 +861,7 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
     omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = omega_error
     while last_correction/omega_error > 1e-5:
-        p += 2
+        p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
         last_correction = exp_Omega_bound(h, p, s, maxc, factorial)

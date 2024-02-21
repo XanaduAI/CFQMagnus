@@ -203,7 +203,7 @@ with plt.style.context('science'):
         ax.set_yscale('log')
         ax.set_xscale('log')
 
-        ax.set_ylim([7e5, 2e9])
+        ax.set_ylim([7e5, 5e8])
 
         # set x label
         ax.set_xlabel(r'Total error $\epsilon$', size=14)

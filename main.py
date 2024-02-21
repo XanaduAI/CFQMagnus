@@ -77,8 +77,8 @@ with open('results/step_error_CFMagnus.json', 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 ########### Trotter product formula ###########
-    
-range_s_trotter = [1,2,3,4]
+
+range_s_trotter = [1,2,3]
 
 step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
 
