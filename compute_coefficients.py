@@ -45,6 +45,8 @@ zs[4][11] = [
 
 # Compute the coefficients ys[s][m]
 ys = {}
+ys[1] = {}
+ys[1][1] = [1]
 ys[2] = {}
 ys[2][2] = [list(y_from_x(2, np.expand_dims(x, axis = 0))) for x in xs[2][2]]
 ys[2][3] = [list(y_from_x(2, np.expand_dims(x, axis = 0))) for x in xs[2][3]]

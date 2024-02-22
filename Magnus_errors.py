@@ -667,9 +667,9 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
         # Error from the Taylor expansion of the product of exponentials in the commutator-free operator
         error += Psi_m_Taylor_error(h, maxp, s, m, overline_xs[s][m] * maxc, factorial, use_max = use_max or s > 4)
 
-        # Error from the quadrature rule
-        qr = quadrature_residual(h, s, maxc = maxc)
-        error += quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
+    # Error from the quadrature rule
+    qr = quadrature_residual(h, s, maxc = maxc)
+    error += quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
 
 
     # Error from the Trotter product formula

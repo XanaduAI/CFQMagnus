@@ -203,7 +203,7 @@ with plt.style.context('science'):
         ax.set_yscale('log')
         ax.set_xscale('log')
 
-        #ax.set_ylim([1e3, 7e9])
+        ax.set_ylim([1e3, 5e9])
 
         # set x label
         ax.set_xlabel(r'Total time $T = n$', size=14)

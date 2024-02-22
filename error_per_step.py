@@ -102,7 +102,7 @@ with plt.style.context('science'):
     plt.xticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje x
     plt.yticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje y
 
-    ax.text(0.05, 0.9, f'(a)' , horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=14, weight='bold')
+    ax.text(1.2e-3, 1e-3, f'(a)' , horizontalalignment='left', verticalalignment='bottom', fontsize=14, weight='bold') # , transform=ax.transAxes
 
     fig.savefig('figures/error_per_step.pdf')
 
@@ -164,7 +164,7 @@ with plt.style.context('science'):
     plt.xticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje x
     plt.yticks(fontsize=14)  # Controla el tamaño de las etiquetas del eje y
 
-    ax2.text(3e5, 2e-3, f'(b)' , horizontalalignment='left', verticalalignment='bottom', fontsize=14, weight='bold')
+    ax2.text(7e4, 1e-3, f'(b)' , horizontalalignment='left', verticalalignment='bottom', fontsize=14, weight='bold')
 
 
     fig.savefig('figures/cost_per_step.pdf')

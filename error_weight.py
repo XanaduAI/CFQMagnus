@@ -102,16 +102,15 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
         error['Psi_m_Taylor'] = Psi_m_Taylor_error(h, maxp, s, m, overline_xs[s][m], factorial, use_max = use_max or s > 4)
         error_l.append(error['Psi_m_Taylor'])
 
-        # Error from the quadrature rule
-        qr = quadrature_residual(h, s, maxc = maxc)
-        error['Quadrature'] = quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
-        error_l.append(error['Quadrature'])
-
 
     else:
         error['Psi_m_Taylor'] = 0
-        error['Quadrature'] = 0
-        error_l += [0,0]
+        error_l += [0]
+
+    # Error from the quadrature rule
+    qr = quadrature_residual(h, s, maxc = maxc)
+    error['Quadrature'] = quadrature_error(h, s, m, ys, maxc = maxc, qr = qr)
+    error_l.append(error['Quadrature'])
 
 
     # Error from the Trotter product formula
