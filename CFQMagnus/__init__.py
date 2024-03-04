@@ -1,1 +1,1 @@
-from magnus_errors import *
+from .magnus_errors import *

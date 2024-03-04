@@ -621,7 +621,7 @@ for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
 
 # Get current directory
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 save_path = os.path.join(dir_path, 'coefficients')
 
 # First, we import the Magnus expansion coefficients

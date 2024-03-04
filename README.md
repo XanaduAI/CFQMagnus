@@ -13,3 +13,5 @@ pip install -e .
 ```
 
 You may also create a new conda environment before this, though the packages we use are standard (numpy, matplotlib,...).
+
+## Usage
