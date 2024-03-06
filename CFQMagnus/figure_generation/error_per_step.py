@@ -84,6 +84,9 @@ with open('results/step_error_CFMagnus.json', 'r') as f:
 with open('results/step_error_CFMagnus_split.json', 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
+if not os.path.exists("CFQMagnus/figures/"):
+    os.mkdir("CFQMagnus/figures/")
+
 with plt.style.context('science'):
 
     fig, ax = plt.subplots(1, 1, figsize = (4,4))

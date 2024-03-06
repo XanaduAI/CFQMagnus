@@ -83,6 +83,9 @@ total_time_list = [int(2**(i/2)) for i in range(5, 29)]
 range_s = [2,2,3,3]#,4]
 range_m = [2,3,5,6]#,11]
 
+if not os.path.exists("CFQMagnus/figures/"):
+    os.mkdir("CFQMagnus/figures/")
+
 def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_max = True, n = None):
     r"""
     h: step size

@@ -100,6 +100,10 @@ with open('results/step_error_CFMagnus_split.json', 'r') as f:
 # Then we will first create a function to find the minimum cost
 ########### Plot ###########
 # Generate 4 plots, for different total errors
+
+if not os.path.exists("CFQMagnus/figures/"):
+    os.mkdir("CFQMagnus/figures/")
+
 with plt.style.context('science'):
 
     total_error = 1e-3
