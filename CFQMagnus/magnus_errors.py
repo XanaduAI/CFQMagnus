@@ -31,37 +31,6 @@ import os
 
 ################ Bounding \tilde{\Psi}_m^{[2s]} ########################
 
-def efficient_number_compositions_old(p: int, s: int, factorial: dict) -> dict:
-    r'''
-    Given a number p, computes a dictionary analyzing the 
-    integer compositions of p. The dictionary key is the length of the composition of p,
-    and the value is the number of compositions of that length.
-
-    Parameters
-    ----------
-    p: integers up to which compositions add up
-    s: maximum value of each term in the composition
-    factorial: a dictionary with the factorial of all the numbers up to p or above
-        (to avoid recomputing them every time you use it.)
-    '''
-    raise Warning('This function is deprecated. Use efficient_number_compositions instead.')
-    pts = partitions(p, k=s) #todo: remove k=s
-    
-    comps = {}
-    for part in pts:
-        len_ = np.sum(list(part.values()))
-
-        num_comps = factorial[len_]
-        for n in part.values():
-            num_comps /= factorial[n]
-
-        if len_ in comps.keys():
-            comps[len_] += num_comps
-        else:
-            comps[len_] = num_comps
-
-    return comps
-
 def efficient_number_compositions(p: int, factorial: dict) -> dict:
     r'''
     Given a number p, computes a dictionary analyzing the 
@@ -176,7 +145,7 @@ def efficient_weak_compositions(max_dim_w: int, m: int, cs: list, factorial: dic
 
                 denominator = np.longdouble(1)
                 for ki, num_ki in k.items():
-                    denominator = denominator * (factorial[ki] ** num_ki) #todo: added "** num_ki"
+                    denominator = denominator * (factorial[ki] ** num_ki)
 
                 suma = suma + num_comps / denominator * max_cs**dim_w
 
@@ -560,36 +529,6 @@ def convert_keys_to_float(data):
         new_key = float(key)
         new_data[new_key] = value
     return new_data
-
-
-# Deprecated
-############## Bounding \|\Omega(h)\| ###########################
-
-def Omega_bound(h: float, p: int, s: int = None, maxc: float = 1):
-    r'''
-    Computes a tight bound for the error of the Magnus expansion of order p,
-    accounting for 2s terms in the Magnus operator.
-
-    Parameters
-    ----------
-    h: step size
-    p: order of the Magnus expansion
-    s: 2s is the order of the Commutator Free Magnus operator
-    maxc: maximum value of the norm of |a_j|
-
-    Returns
-    '''
-
-    suma = np.longdouble(0)
-    for part in partitions(p):
-        prod = np.longdouble(1)
-        dim = np.sum(list(part.values()))
-        for k, v in part.items():
-            prod = prod * maxc**v / k**v
-        prod = prod / dim if dim > 0 else np.longdouble(0)
-        suma = suma + prod
-
-    return suma * (h/2)**p
 
 
 ############## Basis change error ###########################

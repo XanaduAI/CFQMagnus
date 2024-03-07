@@ -105,7 +105,7 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
     p = 2*s+1
     exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
     last_correction = exp_omega_error
-    while last_correction/exp_omega_error > 1e-5: #todo: change 1e-5
+    while last_correction/exp_omega_error > 1e-5:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
