@@ -104,13 +104,13 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
 
     # First, we add the error from the Taylor truncation of Omega
     p = 2*s+1
-    exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
+    exp_omega_error = exp_Omega_bound(h, p, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
-        last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
+        last_correction = exp_Omega_bound(h, p, maxc, factorial)
         exp_omega_error += last_correction
     error['exp_Magnus_Taylor'] = exp_omega_error
     error_l.append(exp_omega_error)

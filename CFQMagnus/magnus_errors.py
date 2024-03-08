@@ -223,8 +223,7 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, bar_xs: list, factor
 
 
 ############## Bounding \|\exp(\Omega(h))\| ###########################
-#todo: remove s from the function arguments
-def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
+def exp_Omega_bound(h: float, p: int, maxc: float, factorial: dict):
     r'''
     Computes a bound for the error of the Magnus expansion of order p.
     in 
@@ -238,7 +237,6 @@ def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
     ----------
     h: step size
     p: order of the Magnus expansion
-    s: 2s is the order of the Commutator Free Magnus operator
     maxc: maximum value of the norm of |a_j|
     factorial: a dictionary with the factorial of all the numbers up to p or above.
 
@@ -519,13 +517,13 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     # Error from the Taylor expansion of the exponential of the Magnus expansion
 
     p = 2*s+1
-    exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
+    exp_omega_error = exp_Omega_bound(h, p, maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
-        last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
+        last_correction = exp_Omega_bound(h, p, maxc, factorial)
         exp_omega_error += last_correction
     error += exp_omega_error
 
@@ -634,13 +632,13 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
 
     # First, we add the error from the Taylor truncation of Omega
     p = 2*s+1
-    exp_omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
+    exp_omega_error = exp_Omega_bound(h, p,maxc, factorial)
     last_correction = exp_omega_error
     while last_correction/exp_omega_error > 1e-5:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
-        last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
+        last_correction = exp_Omega_bound(h, p,maxc, factorial)
         exp_omega_error += last_correction
     error += exp_omega_error
 
@@ -725,13 +723,13 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
     # First, we add the error from the Taylor truncation of Omega
     s0 = 1
     p = 2*s0+1 # We are truncating the Magnus expansion at order 2s+1
-    omega_error = exp_Omega_bound(h, p, s, maxc, factorial)
+    omega_error = exp_Omega_bound(h, p, maxc, factorial)
     last_correction = omega_error
     while last_correction/omega_error > 1e-5:
         p += 1
         if p > maxp:
             raise ValueError('The error is not converging')
-        last_correction = exp_Omega_bound(h, p, s, maxc, factorial)
+        last_correction = exp_Omega_bound(h, p, maxc, factorial)
         omega_error += last_correction
     error += omega_error
 
