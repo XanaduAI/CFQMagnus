@@ -32,31 +32,32 @@ from CFQMagnus.magnus_errors import *
 # Get current directory
 
 dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-save_path = os.path.join(dir_path, 'coefficients')
+coeff_path = os.path.join(dir_path, 'coefficients')
+results_path = os.path.join(dir_path, 'results')
 
 # First, we import the Magnus expansion coefficients
-with open(os.path.join(save_path, 'xs.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'xs.json'), 'r') as f:
     xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'ys.json'), 'r') as f:
+with open(os.path.join(coeff_path,'ys.json'), 'r') as f:
     ys = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'zs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'overline_xs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'overline_xs.json'), 'r') as f:
     overline_xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path,'xs_split.json'), 'r') as f:
     xs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'ys_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'ys_split.json'), 'r') as f:
     ys_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'zs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'zs_split.json'), 'r') as f:
     zs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'overline_xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
     overline_xs_split = json.load(f, object_hook=convert_keys_to_float)
 
 def convert_sci_to_readable(number_sci):
@@ -82,17 +83,17 @@ total_error_list = [1/2**i for i in range(6, 22)]
 
 ########### Commutator Free Magnus ###########
 
-with open('results/step_error_CFMagnus.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus.json'), 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 ########### Commutation-free Magnus split-operator ###########
 
-with open('results/step_error_CFMagnus_split.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus_split.json'), 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
 
-if not os.path.exists("CFQMagnus/figures/"):
-    os.mkdir("CFQMagnus/figures/")
+if not os.path.exists(os.path.join(dir_path, "CFQMagnus/figures/")):
+    os.mkdir(os.path.join(dir_path, "CFQMagnus/figures/"))
 
 ########### Plot ###########
 # Generate 4 plots, for different total errors
@@ -237,4 +238,5 @@ with plt.style.context('science'):
 
         ax.legend()
 
-        fig.savefig(f'figures/error_scaling_{letter}.pdf', bbox_inches='tight')
+        fig_path = os.path.join(dir_path, 'CFQMagnus/figures', f'error_scaling_{letter}.pdf')
+        fig.savefig(fig_path, bbox_inches='tight')

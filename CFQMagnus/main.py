@@ -30,32 +30,34 @@ plt.style.use('science')
 from magnus_errors import *
 
 # Get current directory
-dir_path = os.path.dirname(os.path.realpath(__file__))
-save_path = os.path.join(dir_path, 'coefficients')
+dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+coeff_path = os.path.join(dir_path, 'coefficients')
+results_path = os.path.join(dir_path, 'results')
+
 
 # First, we import the Magnus expansion coefficients
-with open(os.path.join(save_path, 'xs.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'xs.json'), 'r') as f:
     xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'ys.json'), 'r') as f:
+with open(os.path.join(coeff_path,'ys.json'), 'r') as f:
     ys = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'zs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'overline_xs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'overline_xs.json'), 'r') as f:
     overline_xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path,'xs_split.json'), 'r') as f:
     xs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'ys_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'ys_split.json'), 'r') as f:
     ys_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'zs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'zs_split.json'), 'r') as f:
     zs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'overline_xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
     overline_xs_split = json.load(f, object_hook=convert_keys_to_float)
 
 def convert_sci_to_readable(number_sci):
@@ -86,10 +88,10 @@ range_m = [1, 2, 3, 5, 6]#, 11]
 
 step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
 
-with open('results/step_error_CFMagnus.json', 'w') as f:
+with open(os.path.join(results_path,'step_error_CFMagnus.json'), 'w') as f:
     json.dump(step_error_cf, f)
 
-with open('results/step_error_CFMagnus.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus.json'), 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 ########### Trotter product formula ###########
@@ -98,10 +100,10 @@ range_s_trotter = [1,2,3]
 
 step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
 
-with open('results/step_error_trotter.json', 'w') as f:
+with open(os.path.join(results_path, 'step_error_trotter.json'), 'w') as f:
     json.dump(step_error_trotter, f)
 
-with open('results/step_error_trotter.json', 'r') as f:
+with open(os.path.join(results_path,'step_error_trotter.json'), 'r') as f:
     step_error_trotter = json.load(f, object_hook=convert_keys_to_float)
 
 ########### Commutation-free Magnus split-operator ###########
@@ -111,8 +113,8 @@ range_ms = [12, 20]
 
 step_error_split = compute_step_error_split(hs, range_ss, range_ms, maxp = 50, use_max = True)
 
-with open('results/step_error_CFMagnus_split.json', 'w') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus_split.json'), 'w') as f:
     json.dump(step_error_split, f)
 
-with open('results/step_error_CFMagnus_split.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus_split.json'), 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)

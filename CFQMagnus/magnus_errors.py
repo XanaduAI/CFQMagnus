@@ -22,11 +22,17 @@ from itertools import permutations
 from tqdm import tqdm
 import math
 from tqdm import tqdm
-from sympy.matrices import Matrix
-import sympy as sp
 import json
 import os
 
+
+# Function to convert keys to float
+def convert_keys_to_float(data):
+    new_data = {}
+    for key, value in data.items():
+        new_key = float(key)
+        new_data[new_key] = value
+    return new_data
 
 
 ################ Bounding \tilde{\Psi}_m^{[2s]} ########################
@@ -120,7 +126,7 @@ def efficient_weak_compositions(max_dim_w: int, m: int, cs: list, factorial: dic
 
     weak_comps = {}
 
-    # In case we want to be more precise
+    # In case we want to be more precise, not used in the current implementation
     vector_add_term = np.vectorize(lambda part: add_term(m, mean_cs, part))
 
     max_cs = np.max(cs)
@@ -187,7 +193,7 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, bar_xs: list, factor
     '''
 
     # We first precompute all the weak compositions
-    weak_comps = efficient_weak_compositions(maxp, m, bar_xs, factorial, use_max)
+    weak_comps = efficient_weak_compositions(maxp, m, np.abs(bar_xs), factorial, use_max)
 
     p = 2*s+1
     compositions_p = efficient_number_compositions(p, factorial)
@@ -217,13 +223,13 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, bar_xs: list, factor
 
 
 ############## Bounding \|\exp(\Omega(h))\| ###########################
-
+#todo: remove s from the function arguments
 def exp_Omega_bound(h: float, p: int, s: int, maxc: float, factorial: dict):
     r'''
     Computes a bound for the error of the Magnus expansion of order p.
     in 
     .. math::
-        \sum_{p=2s+1}^\infty \|\exp(\Omega_{2s,2s})_{p}\|
+        \sum_{p=2s+1}^\infty \|\exp(\Omega)_{p}\|
 
     .. math::
         \sum_{p=0}^\infty\left(\frac{h}{2}\right)^p \sum_{\bm{k}\in\mathcal{C}(p)}\frac{1}{|\bm{k}|!} \prod_{l=1}^z \sum_{\bm{j}_l\in\mathcal{C}(k_l)} \frac{c^{|\bm{j}_l|}}{|\bm{j}_l|}\frac{1}{{j_1}_l\cdots {j_n}_l}
@@ -437,100 +443,6 @@ def accumulate_from(n, accumulated, maxp):
     return acc
 
 
-############## Functions to generate matrix T and the quadrature matrix Q ###########################
-
-def generate_T(order):
-    T = Matrix(order, order, lambda i,j: (1-(-1)**(i+j+1))/((i+j+1)*2**(i+j+1)))
-    return T
-
-def generate_T_large(order, dim=25):
-    T = Matrix(order, dim, lambda i,j: (1-(-1)**(i+j+1))/((i+j+1)*2**(i+j+1)))
-    return T
-
-def gauss_legendre(n,x):
-    Pnx = sp.legendre(n,x)
-    Pp = sp.diff(Pnx,x)
-    ci = sp.solve( Pnx, x )
-    wi = [ sp.simplify(2/(1 - xj**2)/(Pp.subs(x,xj))**2) for xj in ci ]
-    return ci, wi
-
-def generate_Q(order):
-    x = sp.Symbol('x')
-    ci, wi = gauss_legendre(order,x)
-    # sort the roots and weights
-    indices = [ci.index(c) for c in np.sort(ci)]
-    ci = [ci[i] for i in indices]
-    wi = [wi[i] for i in indices]
-    Q = Matrix(order, order, lambda i,j: wi[j]*(ci[j]**i)/(2**(i+1)))
-    return Q
-
-############## Functions to changes between the basis of univariate integrals and Lie algebra generators ###########################
-def x_from_y(n: int, y: np.ndarray):
-    r'''
-    n: size of the vector
-    x: vector to be multiplied by T
-
-    Returns y @ T
-    '''
-    assert(y.shape == (1,n))
-    T = generate_T(n)
-    return y @ T
-
-def y_from_x(n: int, x: np.ndarray):
-    r'''
-    n: size of the vector
-    y: vector to be multiplied by R
-
-    Returns x @ R
-    '''
-    assert(x.shape == (1,n))
-    R = generate_T(n).inv()
-    return x @ R
-
-def overline_x_from_y(n: int, y: np.ndarray):
-    r'''
-    n: size of the vector
-    x: vector to be multiplied by T
-
-    Returns y @ T
-    '''
-    assert(y.shape == (1,n))
-    T = generate_T_large(n)
-    return y @ T
-
-def y_from_z(n: int, z: np.ndarray):
-    r'''
-    n: size of the vector
-    z: vector to be multiplied by R
-
-    Returns z @ Q_inv
-    '''
-    assert(z.shape == (1,n))
-    Q_inv = generate_Q(n).inv()
-    return z @ Q_inv
-
-def z_from_y(n:int, y:np.ndarray):
-    r'''
-    n: size of the vector
-    y: vector to be multiplied by R
-
-    Returns y @ Q
-    '''
-    assert(y.shape == (1,n))
-    Q = generate_Q(n)
-    return y @ Q
-
-################# Helper functions ######################
-
-# Function to convert keys to float
-def convert_keys_to_float(data):
-    new_data = {}
-    for key, value in data.items():
-        new_key = float(key)
-        new_data[new_key] = value
-    return new_data
-
-
 ############## Basis change error ###########################
 
 def basis_change_error(h, s, m, ys, maxc = 1):
@@ -550,7 +462,7 @@ def basis_change_error(h, s, m, ys, maxc = 1):
 
     for k in range(1, m+1):
         for j in range(s):
-            basis_change_error += abs(ys[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
+            basis_change_error += np.abs(ys[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
 
     return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
 
@@ -561,31 +473,31 @@ for i in range(0, 75):
 
 # Get current directory
 dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-save_path = os.path.join(dir_path, 'coefficients')
+coeff_path = os.path.join(dir_path, 'coefficients')
 
 # First, we import the Magnus expansion coefficients
-with open(os.path.join(save_path, 'xs.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'xs.json'), 'r') as f:
     xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'ys.json'), 'r') as f:
+with open(os.path.join(coeff_path,'ys.json'), 'r') as f:
     ys = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'zs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'overline_xs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'overline_xs.json'), 'r') as f:
     overline_xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path,'xs_split.json'), 'r') as f:
     xs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'ys_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'ys_split.json'), 'r') as f:
     ys_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'zs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'zs_split.json'), 'r') as f:
     zs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'overline_xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
     overline_xs_split = json.load(f, object_hook=convert_keys_to_float)
 
 ############### CFQM error ####################
@@ -620,7 +532,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     if s>1:
 
         # Error from the Taylor expansion of the product of exponentials in the commutator-free operator
-        error += Psi_m_Taylor_error(h, maxp, s, m, overline_xs[s][m] * maxc, factorial, use_max = use_max or s > 4)
+        error += Psi_m_Taylor_error(h, maxp, s, m, np.abs(overline_xs[s][m]) * maxc, factorial, use_max = use_max or s > 4)
 
     # Error from the quadrature rule
     qr = quadrature_residual(h, s, maxc = maxc)
@@ -733,7 +645,7 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     error += exp_omega_error
 
     # Error from the Taylor expansion of the product of exponentials in the commutator-free operator
-    error += Psi_m_Taylor_error(h, maxp, s, m, overline_xs_split[s][m], factorial, use_max = use_max or s > 4)
+    error += Psi_m_Taylor_error(h, maxp, s, m, np.abs(overline_xs_split[s][m]), factorial, use_max = use_max or s > 4)
 
     # Error from the quadrature rule
     qr = quadrature_residual(h, s, maxc = maxc)
@@ -780,14 +692,14 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
 
     cost_exponentials = {}
     errors = {}
-    for h in step_error[s][m].keys():
+    for h in hs:
         cost_exponentials[h] = total_time*m/h
         #if trotter_exponentials: # No need to Trotterize the exponentials in the split-operator case
         #    cost_exponentials[h] *= 2 * 5**(s-1)
         errors[h] = total_time*step_error[s][m][h]/h
 
     min_cost = np.inf
-    for h in step_error[s][m].keys():
+    for h in hs:
         if errors[h] < total_error and cost_exponentials[h] < min_cost:
             min_cost_h = h
             min_cost = cost_exponentials[h]

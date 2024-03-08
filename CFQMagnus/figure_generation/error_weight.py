@@ -31,31 +31,32 @@ plt.rcParams['text.latex.preamble'] = r'\usepackage{mathrsfs}'
 # Get current directory
 
 dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-save_path = os.path.join(dir_path, 'coefficients')
+coeff_path = os.path.join(dir_path, 'coefficients')
+results_path = os.path.join(dir_path, 'results')
 
 # First, we import the Magnus expansion coefficients
-with open(os.path.join(save_path, 'xs.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'xs.json'), 'r') as f:
     xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'ys.json'), 'r') as f:
+with open(os.path.join(coeff_path,'ys.json'), 'r') as f:
     ys = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'zs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'overline_xs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'overline_xs.json'), 'r') as f:
     overline_xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path,'xs_split.json'), 'r') as f:
     xs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'ys_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'ys_split.json'), 'r') as f:
     ys_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'zs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'zs_split.json'), 'r') as f:
     zs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'overline_xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
     overline_xs_split = json.load(f, object_hook=convert_keys_to_float)
 
 def convert_sci_to_readable(number_sci):
@@ -83,8 +84,8 @@ total_time_list = [int(2**(i/2)) for i in range(5, 29)]
 range_s = [2,2,3,3]#,4]
 range_m = [2,3,5,6]#,11]
 
-if not os.path.exists("CFQMagnus/figures/"):
-    os.mkdir("CFQMagnus/figures/")
+if not os.path.exists(os.path.join(dir_path, "CFQMagnus/figures/")):
+    os.mkdir(os.path.join(dir_path, "CFQMagnus/figures/"))
 
 def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_max = True, n = None):
     r"""
@@ -149,7 +150,7 @@ def error_list(h, s, m, overline_xs, ys, step_error, maxc = 1, maxp = 40, use_ma
 
 labels = ['$\exp(\Omega)$ Taylor', 'CFQM Taylor', 'Quadrature', 'Trotter']
 
-with open('results/step_error_CFMagnus.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus.json'), 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
 
 # Then we will first create a function to find the minimum cost
@@ -163,6 +164,7 @@ with plt.style.context('science'):
     s_list = [2,2,3,3]
     m_list = [2,3,5,6]
     ls = ['a', 'b', 'c', 'd']
+    alphas = [0.5, 0.35, 0.2, 0.05]
     # Now we select is the total error
     for s, m, l in zip(s_list, m_list, ls):
         fig, ax = plt.subplots(1, 1, figsize = (3,3))
@@ -178,9 +180,9 @@ with plt.style.context('science'):
             #for j in range(len(error_lista)):
             #    ax.bar(total_time, error_lista[j], bottom=np.sum(error_lista[:j]), color=colors[j], label = labels[j])
         cummulative = np.zeros(len(error_array))
-        for j in range(len(error_array[0])):
+        for j, alpha, color in zip(range(len(error_array[0])), alphas, colors):
             y1 = error_array.transpose()[j] + cummulative
-            ax.fill_between(total_time_list, y1, cummulative, color=colors[j], label = labels[j], alpha =.2)
+            ax.fill_between(total_time_list, y1, cummulative, color=color, label = labels[j], alpha = 0.15)
             cummulative = y1
 
         # set x label
@@ -197,4 +199,5 @@ with plt.style.context('science'):
         if l == 'd':
             ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=True)
 
-        fig.savefig(f'figures/error_contributions_s={s}_m={m}.pdf', bbox_inches='tight')
+        fig_path = os.path.join(dir_path, 'CFQMagnus/figures', f'error_contributions_s={s}_m={m}.pdf')
+        fig.savefig(fig_path, bbox_inches='tight')

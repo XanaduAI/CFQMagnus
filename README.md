@@ -1,6 +1,6 @@
 # Commutator-free quasi-Magnus operators
 
-This repository contains the code to compute the commutator-free quasi-Magnus cost. The code is found in folder `CFQMagnus/`, while `coefficients/` contains the coefficients of the CFQMs, and `results/` contains the error incurred simulating the CFQM for time step `h`. 
+This repository contains the code to compute the commutator-free quasi-Magnus cost. The code is found in folder `CFQMagnus/`, while `coefficients/` contains the coefficients of the CFQMs, and `results/` contains the error incurred simulating the CFQM for time step `h`.
 
 The main files can are `magnus_errors.py` , containing the primitives that we need to compute their cost; and `main.py`, where we compute the error per step of each CFQM.
 
@@ -27,3 +27,5 @@ The workflow of this software library is the following:
 3. Finally, once those `h->error` dictionaries have been computed, we can minimize the cost (maximize `h`) and plot the result for different systems.
 
 Check the paper for more details on how these are computed.
+
+## How to cite

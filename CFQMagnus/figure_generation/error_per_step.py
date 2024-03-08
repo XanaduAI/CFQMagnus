@@ -28,31 +28,32 @@ plt.style.use('science')
 
 # Get current directory
 dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-save_path = os.path.join(dir_path, 'coefficients')
+coeff_path = os.path.join(dir_path, 'coefficients')
+results_path = os.path.join(dir_path, 'results')
 
 # First, we import the Magnus expansion coefficients
-with open(os.path.join(save_path, 'xs.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'xs.json'), 'r') as f:
     xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'ys.json'), 'r') as f:
+with open(os.path.join(coeff_path,'ys.json'), 'r') as f:
     ys = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'zs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'overline_xs.json'), 'r') as f:
+with open(os.path.join(coeff_path,'overline_xs.json'), 'r') as f:
     overline_xs = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path,'xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path,'xs_split.json'), 'r') as f:
     xs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'ys_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'ys_split.json'), 'r') as f:
     ys_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'zs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'zs_split.json'), 'r') as f:
     zs_split = json.load(f, object_hook=convert_keys_to_float)
 
-with open(os.path.join(save_path, 'overline_xs_split.json'), 'r') as f:
+with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
     overline_xs_split = json.load(f, object_hook=convert_keys_to_float)
 
 def convert_sci_to_readable(number_sci):
@@ -79,13 +80,13 @@ hs = [1/2**(i/5+3) for i in range(1,250)]
 n = 128
 total_time = 1
 
-with open('results/step_error_CFMagnus.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus.json'), 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
-with open('results/step_error_CFMagnus_split.json', 'r') as f:
+with open(os.path.join(results_path, 'step_error_CFMagnus_split.json'), 'r') as f:
     step_error_split = json.load(f, object_hook=convert_keys_to_float)
 
-if not os.path.exists("CFQMagnus/figures/"):
-    os.mkdir("CFQMagnus/figures/")
+if not os.path.exists(os.path.join(dir_path, "CFQMagnus/figures/")):
+    os.mkdir(os.path.join(dir_path, "CFQMagnus/figures/"))
 
 with plt.style.context('science'):
 
@@ -123,8 +124,8 @@ with plt.style.context('science'):
 
     ax.text(1.2e-3, 1e-3, f'(a)' , horizontalalignment='left', verticalalignment='bottom', fontsize=14, weight='bold') # , transform=ax.transAxes
 
-    fig.savefig('figures/error_per_step.pdf')
-
+    fig_path = os.path.join(dir_path, 'CFQMagnus/figures', f'error_per_step.pdf')
+    fig.savefig(fig_path, bbox_inches='tight')
 
 
     #ax.legend()
@@ -185,5 +186,5 @@ with plt.style.context('science'):
 
     ax2.text(7e4, 1e-3, f'(b)' , horizontalalignment='left', verticalalignment='bottom', fontsize=14, weight='bold')
 
-
-    fig.savefig('figures/cost_per_step.pdf')
+    fig_path = os.path.join(dir_path, 'CFQMagnus/figures', f'cost_per_step.pdf')
+    fig.savefig(fig_path, bbox_inches='tight')
