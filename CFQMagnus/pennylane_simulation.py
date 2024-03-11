@@ -107,7 +107,7 @@ def circuit(total_time):
             for k in range(s):
                 iA = iA + zs[s][m][i][k] * H(t + h*roots[k], coeffs, obs, tdobs)
 
-            qml.TrotterProduct(iA, time=h, order=s)
+            qml.TrotterProduct(iA, time=h, order=2*s)
 
     # Measure some quantity
     return qml.state()
