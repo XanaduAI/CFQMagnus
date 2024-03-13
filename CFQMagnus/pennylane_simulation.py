@@ -45,11 +45,12 @@ m = 2
 
 total_time = np.arange(0, T, h)
 
-# Add the time-dependent term
+# Define the Heisenberg Hamiltonian
+
+## Add the time-dependent term
 phase = np.random.uniform(0, 2*np.pi, n)
 freq = np.random.uniform(0, 1, n)
 
-# Define the Hamiltonian
 obs = []
 for i in range(1, n):
     obs.append(qml.PauliX(i-1) @ qml.PauliX(i))
@@ -76,21 +77,16 @@ coeff_path = os.path.join(dir_path, 'coefficients')
 with open(os.path.join(coeff_path,'zs.json'), 'r') as f:
     zs = json.load(f, object_hook=convert_keys_to_float)
 
+##  Computing the roots of the Gauss Legendre polynomial, where the Hamiltonian is evaluated
+##  in each segment
 roots, _ = roots_legendre(s)
 roots = (roots + 1)/2 * h
 
-iA = qml.Hamiltonian([], [])
-i = 0
-t = 0
-for k in range(s):
-    H0 = H(t + h*roots[k], coeffs, obs, tdobs)
-    iA = iA + zs[s][m][i][k] * H0
-
-
-# Create device
+# Implement the simulation using PennyLane
+## Create device
 dev = qml.device('default.qubit', wires=n)
 
-# Define the circuit
+## Define the circuit
 @qml.qnode(dev)
 def circuit(total_time):
 
@@ -112,7 +108,7 @@ def circuit(total_time):
     # Measure some quantity
     return qml.state()
 
-# Run the simulation
+## Run the simulation
 state = circuit(total_time)
 
 print(state)
