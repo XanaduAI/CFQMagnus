@@ -1,12 +1,16 @@
 # Commutator-free quasi-Magnus operators
 
-This repository contains the code to compute the cost of using Commutator-free quasi-Magnus (CFQM) operators. The cost estimation cost is found in folder `CFQMagnus/`, while `coefficients/` contains the coefficients of the CFQMs, and `results/` saves the error-per-step incurred simulating the CFQM when using time step `h`.
+This repository contains the code to compute the cost of using Commutator-free quasi-Magnus (CFQM) operators:
+
+- The cost estimation cost is found in folder `CFQMagnus/`,
+- while `coefficients/` contains the coefficients of the CFQMs,
+- and `results/` saves the error-per-step incurred simulating the CFQM when using time step `h`.
 
 The main files can are `magnus_errors.py` , containing the primitives that we need to compute their cost; and `main.py`, where we compute the error per step of each CFQM.
 
-The cost minimizaton and associated paper figure generation can be implemented using the figure generation files in `CFQMagnus/figure_generation`, including `time_scaling.py`, `error_scaling.py`, `time_n_scaling.py`, `error_weight.py` and `error_per_step.py` .
+The cost minimizaton and associated paper figure generation can be implemented using the figure generation files in `CFQMagnus/figure_generation/`.
 
-We additionally included a file `CFQMagnus/pennylane_simulation.py` providing an example of how to implement time simulation of a CFQM in [Pennylane](https://pennylane.ai/), using a Heisenberg model for the .
+We additionally included a file `CFQMagnus/pennylane_simulation.py` providing an example of how to implement time simulation of a CFQM in [Pennylane](https://pennylane.ai/), using a Heisenberg model for the case.
 
 ## Installation
 
