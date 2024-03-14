@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# In this file we compute and save the dictionaries mapping
+# the step size to the error for the different CFQMs methods.
 
-
-# This is an example code of how to analyze the cost of Magnus expansion
 import math
 from matplotlib import lines
 import numpy as np
