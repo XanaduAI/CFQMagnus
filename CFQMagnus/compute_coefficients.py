@@ -13,6 +13,10 @@
 # limitations under the License.
 
 
+# In this script we compile the coefficients of the CFQM and save them to a json file.
+# The data was obtained from https://iopscience.iop.org/article/10.1088/0305-4470/39/19/S05,
+# for the split-operator CFQMs, and from https://personales.upv.es/~serblaza/2006APNUM.pdf 
+# and https://arxiv.org/abs/1102.5071 for the non-split operator CFQMs.
 
 
 import numpy as np
