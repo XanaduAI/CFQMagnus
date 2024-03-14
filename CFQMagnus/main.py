@@ -16,16 +16,9 @@
 # the step size to the error for the different CFQMs methods.
 
 import math
-from matplotlib import lines
 import numpy as np
-import matplotlib.pyplot as plt
 import json
 import os
-
-import matplotlib.pyplot as plt
-import scienceplots
-
-plt.style.use('science')
 
 from magnus_errors import *
 
@@ -71,11 +64,6 @@ def convert_sci_to_readable(number_sci):
     number_formatted = f"{x} \\cdot 10^{{{int(y)}}}"
 
     return number_formatted
-
-# Compute a dictionary with the value of the factorial
-factorial = {}
-for i in range(0, 75):
-    factorial[i] = np.longdouble(math.factorial(i))
 
 hs = [1/2**(i/5+3) for i in range(1,250)]
 total_error_list = [1e-3, 1e-7, 1e-11, 1e-15]
