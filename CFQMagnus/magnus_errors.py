@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+# In this file we provide the functions to compute each of the error terms in the
+# Magnus expansion.
 
 #### Functions to compute the error terms in the Magnus expansion
 
@@ -222,7 +223,8 @@ def Psi_m_Taylor_error(h: float, maxp: int, s: int, m: int, bar_xs: list, factor
     return error
 
 
-############## Bounding \|\exp(\Omega(h))\| ###########################
+############## Bounding \|\exp(\Omega(h)_p)\| ###########################
+
 def exp_Omega_bound(h: float, p: int, maxc: float, factorial: dict):
     r'''
     Computes a bound for the error of the Magnus expansion of order p.
@@ -277,15 +279,19 @@ def exp_Omega_bound(h: float, p: int, maxc: float, factorial: dict):
 
 ############## Quadrature error ###########################
 
-def quadrature_residual(h, s, maxc = 1):
+def quadrature_residual(h: float, s: int, maxc = 1):
     r'''
-    Computes the error of the quadrature rule for the Magnus expansion of order 2s+1.
+    Computes the residual of the quadrature rule for the Magnus expansion of order 2s+1.
 
     Parameters
     ----------
     h: step size
     s: 2s is the order of the Magnus expansion
     maxc: maximum value of the norm |a_j|
+
+    Returns
+    -------
+    quadrature_res: dictionary with the error of the quadrature rule.
 
     Variables used
     --------------
@@ -309,7 +315,7 @@ def quadrature_residual(h, s, maxc = 1):
 
     return quadrature_res
 
-def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
+def quadrature_error(h: float, s: int, m: int, ys: list, maxc: float = 1, qr = None):
     r'''
     Computes the error of the quadrature rule error of order s,
     for the commutator free Magnus expansion of order 2s+1.
@@ -321,6 +327,11 @@ def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
     m: number of exponentials in the Commutator Free Magnus operator
     ys: list of the coefficients y_{i,j} of the Magnus expansion
     maxc: maximum value of the norm |a_j|
+    qr: quadrature residual, if already computed
+
+    Returns
+    -------
+    error: the error of the quadrature rule.
     '''
 
     if qr is None:
@@ -335,12 +346,25 @@ def quadrature_error(h, s, m, ys, maxc = 1, qr = None):
 
 ############## Trotter error ###########################
 
-def trotter_error_spu_formula(n, h, s, u = 1):
+def trotter_error_spu_formula(n: int, h: float, s: int, u: float = 1):
     r"""
+    Error bound for the Trotter product formula for a spin Hamiltonian.
+
+    Parameters
+    ----------
     n: number of spins.
     h: step size
     s: 2s is the order of the Magnus expansion and of the Trotter product formula
     u: maximum value of the norm of the Hamiltonian and its derivatives.
+
+    Returns
+    -------
+    error: the error of the Trotter product formula.
+
+    Comments
+    --------
+    Taken from eqs. 57 and 58 in supplementary material from
+    https://arxiv.org/abs/1901.00564
     """
 
     # Following notation from the paper
@@ -364,6 +388,14 @@ def trotter_error_k_local(h: float, s: int, k: int, maxc: float):
     s: 2s is the order of the Magnus expansion and of the Trotter product formula
     k: locality of the Hamiltonian
     maxc: norm of the Hamiltonian
+
+    Returns
+    -------
+    error: the error of the Trotter product formula.
+
+    Comments
+    --------
+    Taken from https://arxiv.org/abs/1912.08854
     """
     stages = 2*5**(s-1)
     norm = np.longdouble(1)
@@ -381,6 +413,14 @@ def trotter_error_order2AB(h: float, normA: float = 1/2, normB: float = 1/2):
     h: step size
     normA: norm of the odd term of the Hamiltonian A
     normB: norm of the even term of the Hamiltonian B
+
+    Returns
+    -------
+    error: the error of the Trotter product formula.
+
+    Comments
+    --------
+    Taken from https://arxiv.org/abs/1912.08854
     """
 
     return h**3/12 * 2**3 * normB * normB * normA + \
@@ -396,6 +436,14 @@ def trotter_error_order4AB(h: float, normA: float = 1/2, normB: float = 1/2):
     h: step size
     normA: norm of the odd term of the Hamiltonian A
     normB: norm of the even term of the Hamiltonian B
+
+    Returns
+    -------
+    error: the error of the Trotter product formula.
+
+    Comments
+    --------
+    Taken from https://arxiv.org/abs/1912.08854
     """
 
     return h**5 * 2**5 * (
@@ -405,13 +453,30 @@ def trotter_error_order4AB(h: float, normA: float = 1/2, normB: float = 1/2):
         0.0173 * normA**2 * normB**3 + 0.0284 * normA * normB**4
     )
 
-def suzuki_wiebe_error(h: float, s: int, total_time: float, maxc: float = 1):
-    # total error over total time, so we have multiplied by total_time/h
-    return 9/10 * (5/3)**s * h * maxc * total_time/h
-
 def suzuki_wiebe_cost(h: float, s: int, total_time: float, epsilon: float, maxc: float = 1, splits: int = 2):
-    # Lambda is taken to be 1
-    # Cost over total time, so we have multiplied by total_time/h
+    
+    r"""
+    Computes the cost of the Suzuki-Wiebe formula for the Trotter product formula.
+
+    Parameters
+    ----------
+    h: step size
+    s: 2s is the order of the Magnus expansion and of the Trotter product formula
+    total_time: total time of the simulation
+    epsilon: target error
+    maxc: equivalent to \Lambda in the original paper
+    splits: number of terms in the Hamiltonian
+
+    Returns
+    -------
+    cost: the cost of the Suzuki-Wiebe formula for the Trotter product formula.
+
+    Comments
+    --------
+    See original paper in http:dx.doi.org/10.1088/1751-8113/43/6/065203
+    specifically theorem 1.
+    Cost here over total time, so we have multiplied by total_time/h
+    """
 
     return 3 * splits * h * maxc * s *  (25/3)**s * (h/epsilon)**(1/(2*s)) * total_time / h
 
@@ -441,30 +506,10 @@ def accumulate_from(n, accumulated, maxp):
     return acc
 
 
-############## Basis change error ###########################
+############## Load coefficients ###########################
 
-def basis_change_error(h, s, m, ys, maxc = 1):
-    r"""
-    Computes the error of the basis change of the Magnus expansion of order 2s+1.
-
-    Parameters
-    ----------
-    h: step size
-    s: n = 2s is order of the Magnus expansion
-    m: number of exponentials in the Commutator Free Magnus operator
-    maxc: maximum value of the norm of the Hamiltonian and its derivatives
-    ys: list of the values of the quadrature rule
-    """
-
-    basis_change_error = 0
-
-    for k in range(1, m+1):
-        for j in range(s):
-            basis_change_error += np.abs(ys[s][m][k-1][j])/2**j * (2*maxc)/(2*s+j+1)
-
-    return basis_change_error * (h/2)**(2*s+1) / (1-h/2)
-
-# Compute a dictionary with the value of the factorial
+# Compute a dictionary with the value of the factorial,
+# so we can avoid recomputing it every time we need it.
 factorial = {}
 for i in range(0, 75):
     factorial[i] = np.longdouble(math.factorial(i))
@@ -500,8 +545,13 @@ with open(os.path.join(coeff_path, 'overline_xs_split.json'), 'r') as f:
 
 ############### CFQM error ####################
 
-def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use_max = True):
+def error_sum_CF_wout_trotter(h: float, s: int, m: int, overline_xs: list, ys: list, maxc: float = 1, maxp: float = 40, use_max = True):
     r"""
+    Computes the step error for a commutator-free Magnus expansion,
+    without considering the error from the Trotter product formula.
+
+    Parameters
+    ----------
     h: step size
     n: number of spins
     s: 2s is the order of the Magnus expansion
@@ -511,6 +561,14 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     maxc: maximum value of the norm of the Hamiltonian and its derivatives
     maxp: maximum order of the Magnus expansion
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
+
+    Returns
+    -------
+    error: the error of the commutator-free Magnus expansion.
+
+    Comments
+    --------
+    The use_max = False version has not been tested.
     """
     error = np.longdouble(0)
 
@@ -542,7 +600,7 @@ def error_sum_CF_wout_trotter(h, s, m, overline_xs, ys, maxc = 1, maxp = 40, use
     
     return error
 
-def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max = True, overline_xs = overline_xs, ys = ys, zs = zs):
+def compute_step_error_cf(hs: list, range_s: list, range_m: list, maxp: int, total_time_list: list, use_max = True, overline_xs: list = overline_xs, ys: list = ys, zs: list = zs):
     r"""
     Computes a dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
 
@@ -555,6 +613,18 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
     total_error_list: list of total errors to consider
     total_time_list: list of total times to consider
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
+
+    Returns
+    -------
+    step_error: dictionary of errors for different values of the step size, 
+    the order of the Magnus expansion, and the number of exponentials 
+    in the Commutator Free Magnus operator.
+
+    Comments
+    --------
+    To avoid iterating over many different values n, first we compute all the errors
+    except for the Trotter error, and then we add the latter. 
+    use_max = False has not been tested.
     """
     step_error = {}
     step_error_wout_trotter = {}
@@ -577,7 +647,7 @@ def compute_step_error_cf(hs, range_s, range_m, maxp, total_time_list, use_max =
                                         np.sum([trotter_error_spu_formula(n, Z_*h, s, u = 1) for Z_ in Z])) # m exponentials to be Trotterized
     return step_error
 
-def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotter_exponentials = True, splits = 2, n = None):
+def minimize_cost_CFMagnus(hs: list, s: int, m: int, total_time: float, total_error: float, step_error: dict, trotter_exponentials = True, splits = 2, n = None):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -588,7 +658,17 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
     m: number of exponentials in the Commutator Free Magnus operator
     total_time: total time of the simulation
     total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
+    step_error: dictionary of errors for different values of the step size, 
+        the order of the Magnus expansion, and the number of exponentials 
+        in the Commutator Free Magnus operator.
+    trotter_exponentials: if True, the exponentials are Trotterized.
+    splits: number of terms in the Hamiltonian
+    n: number of spins in the Hamiltonian
+
+    Returns
+    -------
+    min_cost_h: the step size that minimizes the cost of the Magnus expansion.
+    min_cost: the cost of the Magnus expansion.
     """
 
     if n is None:
@@ -612,14 +692,13 @@ def minimize_cost_CFMagnus(hs, s, m, total_time, total_error, step_error, trotte
 
 ############## CFQM split error ####################
 
-def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40, use_max = True):
+def error_sum_CFsplit(h: float, s: int, m: int, overline_xs_split: list, ys_split: list, maxc = 1, maxp = 40, use_max = True):
     r"""
     Computes the step error for a split-operator commutator-free Magnus expansion.
 
     Parameters
     ----------
     h: step size
-    n: number of spins
     s: 2s is the order of the Magnus expansion
     m: number of exponentials in the Commutator Free Magnus operator
     overline_xs_split: list of the coefficients of the Magnus expansion in the basis of the Lie algebra
@@ -627,6 +706,14 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     maxc: maximum value of the norm of the Hamiltonian and its derivatives
     maxp: maximum order of the Magnus expansion
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
+
+    Returns
+    -------
+    error: the error of the commutator-free Magnus expansion.
+
+    Comments
+    --------
+    The use_max = False version has not been tested.
     """
     error = np.longdouble(0)
 
@@ -651,7 +738,7 @@ def error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = 40,
     
     return error
 
-def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overline_xs_split = overline_xs_split, ys_split = ys_split):
+def compute_step_error_split(hs: list, range_s: list, range_m: list, maxp: int, use_max = True, overline_xs_split: list = overline_xs_split, ys_split: list = ys_split):
     r"""
     Computes a dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
 
@@ -660,10 +747,20 @@ def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overlin
     hs: list of step sizes
     range_s: list of values of s to consider
     range_m: list of values of m to consider
-    maxp: maximum order of the Magnus expansion
+    maxp: maximum order of the Magnus expansion to sum over
     total_error_list: list of total errors to consider
     total_time_list: list of total times to consider
     use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
+
+    Returns
+    -------
+    step_error: dictionary of errors for different values of the step size,
+    the order of the Magnus expansion, and the number of exponentials
+    in the Commutator Free Magnus operator.
+
+    Comments
+    --------
+    The use_max = False version has not been tested.
     """
     step_error = {}
     for (s, m) in tqdm(zip(range_s, range_m), desc = 's, m'):
@@ -674,7 +771,7 @@ def compute_step_error_split(hs, range_s, range_m, maxp, use_max = True, overlin
             step_error[s][m][h] = float(error_sum_CFsplit(h, s, m, overline_xs_split, ys_split, maxc = 1, maxp = maxp, use_max = use_max))
     return step_error
 
-def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
+def minimize_cost_CFMagnus_split(hs: list, s: int, m: int, total_time: float, total_error: float, step_error: dict):
     r"""
     Finds the step size that minimizes the cost of a Magnus expansion.
 
@@ -685,7 +782,14 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
     m: number of exponentials in the Commutator Free Magnus operator
     total_time: total time of the simulation
     total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
+    step_error: dictionary of errors for different values of the step size, 
+        the order of the Magnus expansion, and the number of exponentials 
+        in the Commutator Free Magnus operator.
+
+    Returns
+    -------
+    min_cost_h: the step size that minimizes the cost of the Magnus expansion.
+    min_cost: the cost of the Magnus expansion.
     """
 
     cost_exponentials = {}
@@ -707,7 +811,7 @@ def minimize_cost_CFMagnus_split(hs, s, m, total_time, total_error, step_error):
 
 ############## Trotter error ####################
 
-def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
+def error_sum_trotter(h: float, s: int, maxc = 1, maxp = 40, n = None):
     r"""
     Error from using Trotter product formulas of arbitrary order, without the corresponding Magnus expansion.
 
@@ -716,7 +820,12 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
     h: step size
     s: 2s is the order of the Trotter product formula
     maxc: maximum value of the norm of the Hamiltonian
+    maxp: maximum order of the Magnus expansion to sum over
     n: number of spins
+
+    Returns
+    -------
+    error: the error of the Trotter product formula.
     """
     error = np.longdouble(0)
 
@@ -738,19 +847,27 @@ def error_sum_trotter(h, s, maxc = 1, maxp = 40, n = None):
 
     return error
 
-def compute_trotter_step_error(hs, range_s, maxp, total_time_list, use_max = True):
+def compute_trotter_step_error(hs, range_s, maxp, total_time_list):
     r"""
-    Computes a dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
+    Computes a dictionary of errors for different values of the step size,
+        and the order of the Trotter operator.
 
     Parameters
     ----------
     hs: list of step sizes
     range_s: list of values of s to consider
-    range_m: list of values of m to consider
     maxp: maximum order of the Magnus expansion
-    total_error_list: list of total errors to consider
     total_time_list: list of total times to consider
-    use_max: if True, the maximum value of the norm of the Hamiltonian and its derivatives is used
+
+    Returns
+    -------
+    trotter_error: dictionary of errors for different values of the step size,
+        and the order of the Trotter operator.
+
+    Comments
+    --------
+    This function should be used to compute the error of the split-step Trotter product formula.
+    That is, a Magnus product formula of order 2.
     """
     trotter_error = {}
     for n in tqdm(total_time_list, desc = 'time'):  
@@ -773,7 +890,15 @@ def minimize_cost_trotter(hs, s, total_time, total_error, step_error, trotter_ex
     m: number of exponentials in the Commutator Free Magnus operator
     total_time: total time of the simulation
     total_error: total error of the simulation
-    step_error: dictionary of errors for different values of the step size, the order of the Magnus expansion, and the number of exponentials in the Commutator Free Magnus operator.
+    step_error: dictionary of errors for different values of the step size, 
+        and the order of the Trotter operator.
+    trotter_exponentials: if True, the exponentials are Trotterized.
+    splits: number of terms in the Hamiltonian
+
+    Returns
+    -------
+    min_cost_h: the step size that minimizes the cost of the Magnus expansion.
+    min_cost: the cost of the Magnus expansion.
     """
 
     cost_exponentials = {}
