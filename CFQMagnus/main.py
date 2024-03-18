@@ -15,8 +15,6 @@
 # In this file we compute and save the dictionaries mapping
 # the step size to the error for the different CFQMs methods.
 
-import math
-import numpy as np
 import json
 import os
 
@@ -71,8 +69,8 @@ total_time_list = [int(2**(i/2)) for i in range(5, 41)]
 
 ########### Commutator Free Magnus ###########
 
-range_s = [1, 2, 2, 3, 3]#, 4]
-range_m = [1, 2, 3, 5, 6]#, 11]
+range_s = [1, 2, 2, 3, 3]
+range_m = [1, 2, 3, 5, 6]
 
 step_error_cf = compute_step_error_cf(hs, range_s, range_m, maxp = 50, total_time_list=total_time_list, use_max = True)
 
@@ -81,18 +79,6 @@ with open(os.path.join(results_path,'step_error_CFMagnus.json'), 'w') as f:
 
 with open(os.path.join(results_path, 'step_error_CFMagnus.json'), 'r') as f:
     step_error_cf = json.load(f, object_hook=convert_keys_to_float)
-
-########### Trotter product formula ###########
-
-range_s_trotter = [1,2,3]
-
-step_error_trotter = compute_trotter_step_error(hs, range_s_trotter, maxp = 50, total_time_list = total_time_list, use_max = True)
-
-with open(os.path.join(results_path, 'step_error_trotter.json'), 'w') as f:
-    json.dump(step_error_trotter, f)
-
-with open(os.path.join(results_path,'step_error_trotter.json'), 'r') as f:
-    step_error_trotter = json.load(f, object_hook=convert_keys_to_float)
 
 ########### Commutation-free Magnus split-operator ###########
 
