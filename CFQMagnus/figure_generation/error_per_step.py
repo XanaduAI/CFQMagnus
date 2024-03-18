@@ -157,18 +157,6 @@ with plt.style.context('science'):
         ax2.plot(cost_exponentials.values(), errors.values(), label = f'CFQM split, $s = {s}, m_s = {m}$', linestyle = 'dashdot', color = c)
 
 
-    ######## Finally, let us also plot Suzuki cost ########
-    range_s = [1,2,3]
-    colors = ['r', 'orange', 'b']
-    for s, c in zip(range_s, colors):
-        costs = []
-        errors = []
-        for h in hs:
-            error_suzuki = suzuki_wiebe_error(h, s, total_time)
-            cost_suzuki = suzuki_wiebe_cost(h, s, total_time, error_suzuki)
-            costs.append(cost_suzuki)
-            errors.append(error_suzuki)
-        #ax2.plot(costs, errors, label = f'Suzuki, s = {s}', linestyle = '--', color = c)
 
     ax2.set_xscale('log')
     ax2.set_yscale('log')
