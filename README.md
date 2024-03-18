@@ -1,6 +1,6 @@
 # Commutator-free quasi-Magnus operators
 
-This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in 
+This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in
 
 > Blanes, S., & Moan, P. C. (2006). Fourth-and sixth-order commutator-free Magnus integrators for linear and non-linear dynamical systems.  *Applied Numerical Mathematics*,  *56* (12), 1519-1537.
 
@@ -40,13 +40,13 @@ You may also create a new conda environment before this, though the packages we 
 
 The workflow of this software library is the following:
 
-1. Define the coefficients in `compute_coefficients.py`, which will be saved as a json in folder `coefficients/`.
-2. Execute `main.py`, which will use `magnus_errors.py` to compute and save a dictionary into a json with keys being the time step `h` and the value being the error.
+1. Define the coefficients in `compute_coefficients.py`, and execute the script, which will save them as a json in folder `coefficients/`.
+2. Execute `main.py`, which will use `magnus_errors.py` to compute and save a dictionary into a json with keys being the time step `h` and the value being the error, found in `results/`.
 
    a. More specifically, our software is designed to compute the error of spin models so the dictionary `error_step` will have the format `step_error[n][s][m][h]`=e for non-split and `split_step_error[s][m][h]`=e for split-operator CFQMs.
 
    b.  `n` represents the number of spins (only related to Trotter error, and applicable to non-split operators, otherwise that index is not there), `2s` is the order of the method, `m` is the number of exponentials of the CFQM, and `h` is the time step. If you are only interested in the error excluding the Trotter error, check functions `step_error_wout_trotter` for the non-split CFQMs, and `compute_step_error_split` for split-operator CFQMs.
-3. Finally, once those `h->error` dictionaries have been computed, we can minimize the cost (equivalently maximize `h` under error bound constraint) and plot the result for different systems.
+3. Finally, once those `h->error` dictionaries have been computed, we can minimize the cost (equivalently maximize `h` under error bound constraint) and plot the result for different systems, using the figure generation scripts in `CFQMagnus/figure_generation/`.
 
 Check the paper for more details on how these are computed.
 
