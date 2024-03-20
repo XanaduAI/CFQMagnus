@@ -1,10 +1,6 @@
 # Commutator-free quasi-Magnus operators
 
-This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in
-
-> Blanes, S., & Moan, P. C. (2006). Fourth-and sixth-order commutator-free Magnus integrators for linear and non-linear dynamical systems.  *Applied Numerical Mathematics*,  *56* (12), 1519-1537.
-
-such as for instance:
+This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in [Fourth- and sixth-order commutator-free Magnus integrators for linear and non-linear dynamical systems](https://www.sciencedirect.com/science/article/abs/pii/S0168927405002163) such as for instance:
 
 $$
 \exp(\Omega^{[4]}(h)) = \exp(\alpha_1 h A_1 + \alpha_2 h A_2)\exp(\alpha_2 h A_1 + \alpha_1 h A_2),
@@ -17,10 +13,10 @@ with $\alpha_1 = \frac{3-2\sqrt{3}}{12}$, $\alpha_2 = \frac{3+2\sqrt{3}}{12}$, a
 This repository has the following structure
 
 - The cost estimation cost is found in folder `CFQMagnus/`,
-- while `coefficients/` contains the coefficients of the CFQMs,
+- while `coefficients/` contains the coefficients of the CFQMs (see `CFQMagnus/compute_coefficients.py` for their preparation),
 - and `results/` saves the error-per-step incurred simulating the CFQM when using time step `h`.
 
-The main files can are `magnus_errors.py` , containing the primitives that we need to compute their cost; and `main.py`, where we compute the error per step of each CFQM.
+The main files can are `magnus_errors.py` , containing the primitives that we need to compute their cost; and `main.py`, where we compute the error-per-step of each CFQM, which are saved to `results/`.
 
 The cost minimizaton and associated paper figure generation can be implemented using the figure generation files in `CFQMagnus/figure_generation/`.
 
@@ -34,6 +30,6 @@ Navigate to the root directory of this repository and run
 pip install -e .
 ```
 
-You may also create a new conda environment before this, though the packages we use are standard (numpy, matplotlib,...).
+You may also create a new conda environment before this, though the packages we use are standard ones and can be found in the `requirements.txt`.
 
 ## How to cite
