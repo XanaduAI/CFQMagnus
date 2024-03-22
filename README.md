@@ -34,3 +34,16 @@ pip install -e .
 You may also create a new conda environment before this, though the packages we use are standard ones and can be found in the `requirements.txt`.
 
 ## How to cite
+
+Find the article in [Quantum simulation of time-dependent Hamiltonians via commutator-free quasi-Magnus operators](https://arxiv.org/abs/2403.13889)
+
+```
+@misc{casares2024quantum,
+      title={Quantum simulation of time-dependent Hamiltonians via commutator-free quasi-Magnus operators},
+      author={Pablo Antonio Moreno Casares and Modjtaba Shokrian Zini and Juan Miguel Arrazola},
+      year={2024},
+      eprint={2403.13889},
+      archivePrefix={arXiv},
+      primaryClass={quant-ph}
+}
+```
