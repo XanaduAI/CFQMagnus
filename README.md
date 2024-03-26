@@ -1,6 +1,6 @@
 # Commutator-free quasi-Magnus operators
 
-This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in [Fourth- and sixth-order commutator-free Magnus integrators for linear and non-linear dynamical systems](https://www.sciencedirect.com/science/article/abs/pii/S0168927405002163) (see pdf [here](https://personales.upv.es/~serblaza/2006APNUM.pdf))such as for instance:
+This repository contains the code to compute the cost of implementing quantum simulation using Commutator-free quasi-Magnus (CFQM) operators, originally introduced in [Fourth- and sixth-order commutator-free Magnus integrators for linear and non-linear dynamical systems](https://www.sciencedirect.com/science/article/abs/pii/S0168927405002163) (see pdf [here](https://personales.upv.es/~serblaza/2006APNUM.pdf)) such as for instance:
 
 $$
 \exp(\Omega^{[4]}(h)) = \exp(-i \alpha_1 h H(t_1) - i \alpha_2 h H(t_2))\exp(-i\alpha_2 h H(t_1) -i \alpha_1 h H(t_2)),
